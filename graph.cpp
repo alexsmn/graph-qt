@@ -11,10 +11,32 @@
 
 #include <QMouseEvent>
 #include <QPainter>
+#include <QSplitter>
 #include <algorithm>
 #include <cfloat>
 
 namespace views {
+
+class CustomSplitterHandle : public QSplitterHandle {
+ public:
+  using QSplitterHandle::QSplitterHandle;
+
+ protected:
+  virtual void paintEvent(QPaintEvent* e) override {
+    QPainter painter{this};
+    painter.fillRect(rect(), Qt::black);
+  }
+};
+
+class CustomSplitter : public QSplitter {
+ public:
+  using QSplitter::QSplitter;
+
+ protected:
+  virtual QSplitterHandle* createHandle() override {
+    return new CustomSplitterHandle{orientation(), this};
+  }
+};
 
 std::string FormatTime(base::Time time, const char* format_string) {
   if (strcmp(format_string, "ms") == 0) {
@@ -43,14 +65,14 @@ Graph::Graph()
       selected_cursor_(NULL),
       selected_pane_(NULL),
       grid_pen_(QColor(237, 237, 237)),
-      selected_cursor_pen_(QColor(100, 100, 100)),
       selected_cursor_color_(100, 100, 100),
       horizontal_axis_(new GraphAxis),
-      splitter_{new QSplitter{this}} {
+      splitter_{new CustomSplitter{this}} {
   horizontal_axis_->Init(this, NULL, false);
   horizontal_axis_->setParent(this);
 
   splitter_->setOrientation(Qt::Vertical);
+  splitter_->setHandleWidth(1);
 
   setFrameStyle(QFrame::StyledPanel);
   setStyleSheet("background-color: white;");
@@ -58,25 +80,6 @@ Graph::Graph()
 
 Graph::~Graph() {
   DeleteAllPanes();
-}
-
-void Graph::paintEvent(QPaintEvent* e) {
-  QFrame::paintEvent(e);
-
-  QPainter painter(this);
-
-  auto panes_bounds = GetContentsBounds();
-
-  // Draw dividers between panes.
-  if (panes_.size() >= 2) {
-    Panes::iterator last = --panes_.end();
-    for (Panes::iterator i = panes_.begin(); i != last; ++i) {
-      GraphPane& pane = **i;
-      int y = pane.geometry().bottom();
-      painter.drawLine(panes_bounds.x() - 1, y,
-                       panes_bounds.right() - kVerticalAxisWidth + 1, y);
-    }
-  }
 }
 
 QRect Graph::GetContentsBounds() const {
@@ -92,9 +95,7 @@ QRect Graph::GetPanesBounds() const {
 }
 
 void Graph::resizeEvent(QResizeEvent* e) {
-  auto panes_bounds = GetPanesBounds();
-
-  splitter_->setGeometry(panes_bounds);
+  splitter_->setGeometry(GetPanesBounds());
 
   // Calculate location of time axis.
   auto contents_bounds = GetContentsBounds();

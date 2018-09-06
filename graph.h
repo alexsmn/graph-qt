@@ -4,12 +4,13 @@
 
 #include <QFrame>
 #include <QPen>
-#include <QSplitter>
 #include <cmath>
 #include <deque>
 #include <list>
 #include <memory>
 #include <string>
+
+class QSplitter;
 
 namespace views {
 
@@ -65,7 +66,6 @@ class Graph : public QFrame {
   virtual QString GetCursorLabel(const GraphCursor& cursor) const;
 
   // View
-  virtual void paintEvent(QPaintEvent* e) override;
   virtual void resizeEvent(QResizeEvent* e) override;
   /*virtual bool IsFocusable() const { return true; }
   virtual void RequestFocus();*/
@@ -74,7 +74,6 @@ class Graph : public QFrame {
   int vertical_cursor_label_width_;
   bool m_time_fit;
   QPen grid_pen_;
-  QPen selected_cursor_pen_;
   QColor selected_cursor_color_;
 
   static const int kVerticalAxisWidth = 50;

@@ -347,7 +347,7 @@ void GraphAxis::PaintCursorLabel(QPainter& painter, const GraphCursor& cursor) {
   painter.fillRect(rect, color);
 
   auto label = graph_->GetCursorLabel(cursor);
-  // TODO: text color
+  painter.setPen(Qt::white);
   painter.drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, label);
 }
 
