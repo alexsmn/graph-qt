@@ -50,6 +50,8 @@ Graph::Graph()
   horizontal_axis_->Init(this, NULL, false);
   horizontal_axis_->setParent(this);
 
+  splitter_->setOrientation(Qt::Vertical);
+
   setFrameStyle(QFrame::StyledPanel);
   setStyleSheet("background-color: white;");
 }

@@ -52,7 +52,9 @@ GraphAxis::GraphAxis()
       plot_(NULL),
       is_vertical_(false),
       tick_step_(0.0),
-      moved_(false) {}
+      moved_(false) {
+  setMouseTracking(true);
+}
 
 GraphAxis::~GraphAxis() {}
 
