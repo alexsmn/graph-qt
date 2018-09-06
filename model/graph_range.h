@@ -65,7 +65,6 @@ class GraphRange {
     return GraphRange(0.0, 1.0, LOGICAL);
   }
 
- private: 
   double low_;
   double high_;
   Kind kind_;

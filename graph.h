@@ -96,6 +96,7 @@ class Graph : public QFrame {
  private:
   // TODO: Remove friends.
   friend class GraphAxis;
+  friend class GraphLine;
   friend class GraphPane;
   friend class GraphPlot;
 
@@ -120,13 +121,14 @@ class Graph : public QFrame {
   QRect GetContentsBounds() const;
   QRect GetPanesBounds() const;
 
-  void RescalePanes();
-
   GraphPane* GetPaneSizerAt(QPoint point) const;
 
   void InvalidateCursor(const GraphCursor& cursor);
 
   void OnHorizontalRangeUpdated();
+
+  void AdjustTimeRange();
+  void AdjustTimeRange(GraphRange& range);
 
   // Get horizontal label string. Shall be called only in scope of DrawYAxis().
   virtual QString GetXAxisLabel(double value) const;

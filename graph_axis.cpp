@@ -292,6 +292,7 @@ void GraphAxis::mouseMoveEvent(QMouseEvent* event) {
       int dx = event->x() - last_point_.x();
       double dt = dx * range_.delta() / width();
       GraphRange range(range_.low() - dt, range_.high(), range_.kind());
+      graph_->AdjustTimeRange(range);
       SetRange(range);
 
       if (graph_->controller())

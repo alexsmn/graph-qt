@@ -1,24 +1,29 @@
 #include "graph_qt/graph_line.h"
 
-#include <cfloat>
 #include <qpainter.h>
+#include <cfloat>
 
 #include "base/win/scoped_gdi_object.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_axis.h"
-#include "graph_qt/model/graph_data_source.h"
 #include "graph_qt/graph_plot.h"
+#include "graph_qt/model/graph_data_source.h"
 
 namespace views {
 
-template<typename T>
+namespace {
+// Correlates to the screen resolution.
+const size_t kMaxPoints = 10000;
+}
+
+template <typename T>
 inline T sqr(T x) {
   return x * x;
 }
 
 inline int CalcPointDistance(const QPoint& a, const QPoint& b) {
-  return static_cast<int>(sqrt(static_cast<double>(
-      sqr(a.x() - b.x()) + sqr(a.y() - b.y()))));
+  return static_cast<int>(
+      sqrt(static_cast<double>(sqr(a.x() - b.x()) + sqr(a.y() - b.y()))));
 }
 
 GraphLine::GraphLine()
@@ -27,8 +32,7 @@ GraphLine::GraphLine()
       flags(STEPPED | AUTO_RANGE | SHOW_DOTS),
       color(Qt::black),
       line_weight_(1),
-      current_value_(kGraphUnknownValue) {
-}
+      current_value_(kGraphUnknownValue) {}
 
 GraphLine::~GraphLine() {
   if (data_source_)
@@ -47,9 +51,9 @@ void GraphLine::SetDataSource(GraphDataSource* data_source) {
   if (data_source_)
     data_source_->SetObserver(this);
 
-  SetCurrentValue(data_source_ ? data_source_->current_value() :
-                                 kGraphUnknownValue);
-  
+  SetCurrentValue(data_source_ ? data_source_->current_value()
+                               : kGraphUnknownValue);
+
   UpdateRange();
 
   // Values changed, need to invalidate.
@@ -57,7 +61,10 @@ void GraphLine::SetDataSource(GraphDataSource* data_source) {
     plot_->update();
 }
 
-void GraphLine::DrawLimit(QPainter& painter, const QRect& rect, double limit, const QPen& pen) {
+void GraphLine::DrawLimit(QPainter& painter,
+                          const QRect& rect,
+                          double limit,
+                          const QPen& pen) {
   int y = ValueToY(limit);
   // TODO: Set pen preliminary.
   painter.save();
@@ -97,7 +104,8 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
     QPoint point(ValueToX(value.x), ValueToY(value.y));
     /*if (smooth()) {
       PolyBezierTo(canvas->native_canvas(), &pt, 1);
-    } else*/ {
+    } else*/
+    {
       if (stepped()) {
         QPoint corner_point(point.x(), last_point.y());
         painter.drawLine(last_point, corner_point);
@@ -107,10 +115,12 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
       }
     }
 
-    // Draw dot on previous point (current draw on current as it will overlap line).
+    // Draw dot on previous point (current draw on current as it will overlap
+    // line).
     if (dots_shown()) {
-      QRect dot_rect(last_point.x() - line_weight_, last_point.y() - line_weight_,
-                     line_weight_ * 2 + 1, line_weight_ * 2 + 1);
+      QRect dot_rect(last_point.x() - line_weight_,
+                     last_point.y() - line_weight_, line_weight_ * 2 + 1,
+                     line_weight_ * 2 + 1);
       painter.fillRect(dot_rect, color);
     }
 
@@ -139,10 +149,10 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
 void GraphLine::SetCurrentValue(double value) {
   if (current_value_ == value)
     return;
-    
+
   if (current_value_ != kGraphUnknownValue)
     plot().vertical_axis().InvalidateCurrentValue(current_value_);
-  
+
   current_value_ = value;
 
   if (current_value_ != kGraphUnknownValue)
@@ -174,22 +184,24 @@ GraphRange GraphLine::CalculateAutoRange() {
   // Get range from screen.
   double x1 = XToValue(0);
   double x2 = XToValue(plot().width());
-  
+
   return data_source_->CalculateAutoRange(x1, x2);
 }
 
-bool GraphLine::GetNearestPoint(const QPoint& screen_point, GraphPoint& data_point, int max_distance) {
+bool GraphLine::GetNearestPoint(const QPoint& screen_point,
+                                GraphPoint& data_point,
+                                int max_distance) {
   if (!data_source_)
     return false;
 
   // get range from screen
   double x1 = XToValue(0);
   double x2 = XToValue(plot().width());
-  
+
   PointEnumerator* point_enum = data_source_->EnumPoints(x1, x2, true, false);
   if (!point_enum)
     return false;
-  
+
   GraphPoint point;
   if (!point_enum->EnumNext(point))
     return false;
@@ -218,9 +230,37 @@ void GraphLine::SetRange(const GraphRange& range) {
 void GraphLine::UpdateAutoRange() {
   if (!auto_range())
     return;
-    
+
   GraphRange range = CalculateAutoRange();
   SetRangeHelper(range);
+}
+
+void GraphLine::AdjustTimeRange(GraphRange& range) const {
+  auto* points = data_source_->EnumPoints(range.low(), range.high(), false, false);
+  if (!points || points->GetCount() <= kMaxPoints)
+    return;
+
+  // Binary search for low bound to keep kMaxPoints points.
+
+  double min = range.low_;
+  double max = range.high_;
+
+  for (;;) {
+    double value = (min + max) / 2;
+    auto* points = data_source_->EnumPoints(value, range.high_, false, false);
+    auto count = points ? points->GetCount() : 0;
+
+    // Allow 5% error.
+    if (count <= kMaxPoints && kMaxPoints - count <= kMaxPoints / 20) {
+      range.low_ = value;
+      return;
+    }
+
+    if (count < kMaxPoints)
+      max = value;
+    else
+      min = value;
+  }
 }
 
 void GraphLine::SetRangeHelper(const GraphRange& range) {
@@ -228,6 +268,7 @@ void GraphLine::SetRangeHelper(const GraphRange& range) {
     return;
 
   range_ = range;
+
   if (plot_)
     plot_->vertical_axis().UpdateRange();
 }
@@ -235,16 +276,22 @@ void GraphLine::SetRangeHelper(const GraphRange& range) {
 void GraphLine::OnDataSourceItemChanged() {
   UpdateRange();
 
-  if (plot_)
+  if (plot_) {
+    plot_->graph().AdjustTimeRange();
+
     plot_->update();
+  }
 }
 
 void GraphLine::OnDataSourceHistoryChanged() {
   UpdateRange();
 
-  // Values changed, need to invalidate.
-  if (plot_)
+  if (plot_) {
+    plot_->graph().AdjustTimeRange();
+
+    // Values changed, need to invalidate.
     plot_->update();
+  }
 }
 
 void GraphLine::OnDataSourceCurrentValueChanged() {
@@ -258,4 +305,4 @@ void GraphLine::UpdateRange() {
     SetRange(data_source_ ? data_source_->range() : GraphRange());
 }
 
-} // namespace views
+}  // namespace views

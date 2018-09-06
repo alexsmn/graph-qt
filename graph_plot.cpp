@@ -4,8 +4,8 @@
 #include <qpainter.h>
 #include <limits>
 
-#include "base/strings/sys_string_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_axis.h"
 #include "graph_qt/graph_line.h"
@@ -36,7 +36,9 @@ GraphPlot::~GraphPlot() {
   DeleteAllLines();
 }
 
-void GraphPlot::Init(Graph* graph, GraphPane* pane, GraphAxis* horizontal_axis,
+void GraphPlot::Init(Graph* graph,
+                     GraphPane* pane,
+                     GraphAxis* horizontal_axis,
                      GraphAxis* vertical_axis) {
   graph_ = graph;
   pane_ = pane;
@@ -46,7 +48,7 @@ void GraphPlot::Init(Graph* graph, GraphPane* pane, GraphAxis* horizontal_axis,
 
 void GraphPlot::AddLine(GraphLine& line) {
   assert(!line.plot_);
-  
+
   line.plot_ = this;
   lines_.push_back(&line);
 
@@ -94,13 +96,13 @@ void GraphPlot::paintEvent(QPaintEvent* e) {
 
   // Draw horizontal cursors.
   for (Cursors::const_iterator i = vertical_axis_->cursors().begin();
-                               i != vertical_axis_->cursors().end(); ++i) {
+       i != vertical_axis_->cursors().end(); ++i) {
     PaintCursor(painter, *i);
   }
 
   // Draw vertical cursors.
   for (Cursors::const_iterator i = horizontal_axis_->cursors().begin();
-                               i != horizontal_axis_->cursors().end(); ++i) {
+       i != horizontal_axis_->cursors().end(); ++i) {
     PaintCursor(painter, *i);
   }
 
@@ -125,7 +127,7 @@ void GraphPlot::PaintHorizontalGrid(QPainter& painter) {
   vertical_axis_->GetTickValues(first_value, last_value);
 
   double grid_step = vertical_axis_->tick_step();
-    
+
   for (double v = first_value; v <= last_value; v += grid_step) {
     int p = vertical_axis_->ConvertValueToScreen(v);
     painter.drawLine(1, p, width() - 1, p);
@@ -169,10 +171,11 @@ void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
 
         GraphRange new_range = range;
         new_range.Offset(dt);
+        graph_->AdjustTimeRange(new_range);
         horizontal_axis_->SetRange(new_range);
       }
       break;
-      
+
     case STATE_ZOOMING: {
       QPainter painter(this);
       PaintZoomRect(painter);
@@ -205,19 +208,19 @@ void GraphPlot::mouseReleaseEvent(QMouseEvent* e) {
   if (state_ == STATE_ZOOMING) {
     QPainter painter(this);
     PaintZoomRect(painter);
-    
-    //GraphRange horizontal_range, vertical_range;
-    //horizontal_range.low = XToValue(down_point_.x);
-    //horizontal_range.high = XToValue(last_point_.x);
-    //if (horizontal_range.low > horizontal_range.high)
+
+    // GraphRange horizontal_range, vertical_range;
+    // horizontal_range.low = XToValue(down_point_.x);
+    // horizontal_range.high = XToValue(last_point_.x);
+    // if (horizontal_range.low > horizontal_range.high)
     //  std::swap(horizontal_range.low, horizontal_range.high);
 
-    //vertical_range.low = YToValue(down_point_.y);
-    //vertical_range.high = YToValue(last_point_.y);
-    //if (vertical_range.low > vertical_range.high)
+    // vertical_range.low = YToValue(down_point_.y);
+    // vertical_range.high = YToValue(last_point_.y);
+    // if (vertical_range.low > vertical_range.high)
     //  std::swap(vertical_range.low, vertical_range.high);
 
-    //graph_->Zoom(*this, horizontal_range, vertical_range);
+    // graph_->Zoom(*this, horizontal_range, vertical_range);
   }
 
   state_ = STATE_IDLE;
@@ -254,9 +257,10 @@ void GraphPlot::RemoveWidget(GraphWidget& widget) {
 void GraphPlot::InvalidateCursor(const GraphCursor& cursor) {
   int pos = cursor.axis_->ConvertValueToScreen(cursor.position_);
 
-  QRect cursor_rect = cursor.axis_->is_vertical() ?
-      QRect(0, pos - kCursorWidth / 2, width(), kCursorWidth) :
-      QRect(pos - kCursorWidth / 2, 0, kCursorWidth, height());
+  QRect cursor_rect =
+      cursor.axis_->is_vertical()
+          ? QRect(0, pos - kCursorWidth / 2, width(), kCursorWidth)
+          : QRect(pos - kCursorWidth / 2, 0, kCursorWidth, height());
   update(cursor_rect);
 }
 
@@ -288,7 +292,7 @@ void GraphPlot::PaintVerticalGrid(QPainter& painter) {
 
   double grid_step = horizontal_axis().tick_step() / 2;
   first_value -= grid_step;
-    
+
   for (double x = first_value; x <= last_value; x += grid_step) {
     int p = horizontal_axis().ConvertValueToScreen(x);
     painter.drawLine(p, 1, p, height() - 1);
@@ -309,9 +313,10 @@ void GraphPlot::SetFocusPoint(const GraphPoint& point, GraphLine* line) {
 
   if (focus_line_) {
     auto x_label = graph_->GetXAxisLabel(focus_point_.x);
-    auto y_label = focus_line_->data_source() ?
-        focus_line_->data_source()->GetYAxisLabel(focus_point_.y) :
-        QString();
+    auto y_label =
+        focus_line_->data_source()
+            ? focus_line_->data_source()->GetYAxisLabel(focus_point_.y)
+            : QString();
     focus_tooltip_ = x_label + QStringLiteral("\n") + y_label;
   }
 
@@ -327,12 +332,11 @@ void GraphPlot::InvalidateFocusPoint() {
   update(QRect(p.x() - 3, p.y() - 3, 6, 6));
 }
 
-/*bool GraphPlot::GetTooltipText(const QPoint& p, base::string16* tooltip) const {
-  if (focus_tooltip_.empty())
-    return false;
+/*bool GraphPlot::GetTooltipText(const QPoint& p, base::string16* tooltip) const
+{ if (focus_tooltip_.empty()) return false;
 
   *tooltip = focus_tooltip_;
   return true;
 }*/
 
-} // namespace views
+}  // namespace views

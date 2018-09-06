@@ -1,10 +1,5 @@
 #include "graph_qt/graph.h"
 
-#include <qevent.h>
-#include <qpainter.h>
-#include <algorithm>
-#include <cfloat>
-
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
@@ -13,6 +8,11 @@
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/graph_widget.h"
+
+#include <QEvent>
+#include <QPainter>
+#include <algorithm>
+#include <cfloat>
 
 namespace views {
 
@@ -194,7 +194,8 @@ void Graph::OnMouseReleased(const ui::MouseEvent& event) {
 
   if (!event.IsLeftMouseButton())
     return;
-    
+    
+
 //  if (state_ != STATE_IDLE && state_ != STATE_MOUSE_DOWN)
 //    ReleaseCapture();
   state_ = STATE_IDLE;
@@ -317,6 +318,19 @@ void Graph::DeleteCursor(const GraphCursor& cursor) {
   UpdateCurBox();
 }
 
+void Graph::AdjustTimeRange() {
+  auto range = horizontal_axis_->range();
+  AdjustTimeRange(range);
+  horizontal_axis_->SetRange(range);
+}
+
+void Graph::AdjustTimeRange(GraphRange& range) {
+  for (const auto* pane : panes_) {
+    for (const auto* line : pane->plot().lines())
+      line->AdjustTimeRange(range);
+  }
+}
+
 void Graph::OnHorizontalRangeUpdated() {
   UpdateAutoRanges();
 }
@@ -390,12 +404,15 @@ void Graph::Zoom(GraphPane& pane,
 }
 
 void Graph::Fit() {
+  auto range = horizontal_axis().range();
+
   if (m_time_fit && right_range_limit_ != std::numeric_limits<double>::max()) {
-    views::GraphRange range(
-        right_range_limit_ - horizontal_axis().range().delta(),
-        right_range_limit_, horizontal_axis().range().kind());
-    horizontal_axis().SetRange(range);
+    range = views::GraphRange{right_range_limit_ - range.delta(),
+                              right_range_limit_, range.kind()};
   }
+
+  AdjustTimeRange(range);
+  horizontal_axis().SetRange(range);
 }
 
 /*View* Graph::GetEventHandlerForPoint(const QPoint& point) {
