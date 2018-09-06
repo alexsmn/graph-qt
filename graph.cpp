@@ -17,27 +17,6 @@
 
 namespace views {
 
-class CustomSplitterHandle : public QSplitterHandle {
- public:
-  using QSplitterHandle::QSplitterHandle;
-
- protected:
-  virtual void paintEvent(QPaintEvent* e) override {
-    QPainter painter{this};
-    painter.fillRect(rect(), Qt::black);
-  }
-};
-
-class CustomSplitter : public QSplitter {
- public:
-  using QSplitter::QSplitter;
-
- protected:
-  virtual QSplitterHandle* createHandle() override {
-    return new CustomSplitterHandle{orientation(), this};
-  }
-};
-
 std::string FormatTime(base::Time time, const char* format_string) {
   if (strcmp(format_string, "ms") == 0) {
     base::Time::Exploded e = {0};
@@ -67,12 +46,12 @@ Graph::Graph()
       grid_pen_(QColor(237, 237, 237)),
       selected_cursor_color_(100, 100, 100),
       horizontal_axis_(new GraphAxis),
-      splitter_{new CustomSplitter{this}} {
+      splitter_{new QSplitter{this}} {
   horizontal_axis_->Init(this, NULL, false);
   horizontal_axis_->setParent(this);
 
   splitter_->setOrientation(Qt::Vertical);
-  splitter_->setHandleWidth(1);
+  splitter_->setHandleWidth(0);
 
   setFrameStyle(QFrame::StyledPanel);
   setStyleSheet("background-color: white;");
@@ -90,7 +69,7 @@ QRect Graph::GetContentsBounds() const {
 
 QRect Graph::GetPanesBounds() const {
   QRect bounds = GetContentsBounds();
-  bounds.setHeight(std::max(0, bounds.height() - kHorizontalAxisHeight));
+  bounds.setHeight(std::max(0, bounds.height() - kHorizontalAxisHeight - 1));
   return bounds;
 }
 

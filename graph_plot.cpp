@@ -1,9 +1,5 @@
 #include "graph_qt/graph_plot.h"
 
-#include <qevent.h>
-#include <qpainter.h>
-#include <limits>
-
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "graph_qt/graph.h"
@@ -11,6 +7,10 @@
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_widget.h"
+
+#include <QMouseEvent>
+#include <QPainter>
+#include <limits>
 
 QRect MakeRectFromPoints(const QPoint& a, const QPoint& b) {
   return QRect(std::min(a.x(), b.x()), std::min(a.y(), b.y()),
@@ -112,6 +112,12 @@ void GraphPlot::paintEvent(QPaintEvent* e) {
              focus_line_->ValueToY(focus_point_.y));
     painter.fillRect(QRect(p.x() - 3, p.y() - 3, 6, 6), focus_line_->color);
   }
+
+  // Frame.
+  auto rect = this->rect();
+  painter.setPen(Qt::black);
+  painter.drawLine(rect.right(), rect.top(), rect.right(), rect.bottom());
+  painter.drawLine(rect.right(), rect.bottom(), rect.left(), rect.bottom());
 }
 
 void GraphPlot::PaintHorizontalGrid(QPainter& painter) {
@@ -130,7 +136,7 @@ void GraphPlot::PaintHorizontalGrid(QPainter& painter) {
 
   for (double v = first_value; v <= last_value; v += grid_step) {
     int p = vertical_axis_->ConvertValueToScreen(v);
-    painter.drawLine(1, p, width() - 1, p);
+    painter.drawLine(1, p, width() - 2, p);
   }
 
   painter.restore();
@@ -295,7 +301,7 @@ void GraphPlot::PaintVerticalGrid(QPainter& painter) {
 
   for (double x = first_value; x <= last_value; x += grid_step) {
     int p = horizontal_axis().ConvertValueToScreen(x);
-    painter.drawLine(p, 1, p, height() - 1);
+    painter.drawLine(p, 1, p, height() - 2);
   }
 
   painter.restore();

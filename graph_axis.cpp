@@ -87,10 +87,10 @@ void GraphAxis::paintEvent(QPaintEvent* e) {
   QPainter painter(this);
 
   // Draw axis line.
-  if (is_vertical_)
+  /*if (is_vertical_)
     painter.drawLine(0, 0, 0, height());
   else
-    painter.drawLine(0, 0, width(), 0);
+    painter.drawLine(0, 0, width(), 0);*/
 
   double first_value, last_value;
   GetTickValues(first_value, last_value);
@@ -181,14 +181,12 @@ QRect GraphAxis::GetCursorLabelRect(const GraphCursor& cursor) const {
 
   if (is_vertical_) {
     int y = ConvertValueToScreen(cursor.position_);
-    return QRect(1, y - kLabelHeight / 2, std::max(0, width() - 1),
-                 kLabelHeight);
+    return QRect(0, y - kLabelHeight / 2, width(), kLabelHeight);
 
   } else {
     int x = ConvertValueToScreen(cursor.position_);
-    return QRect(x - graph_->vertical_cursor_label_width_ / 2 - 1, 1,
-                 graph_->vertical_cursor_label_width_,
-                 std::max(0, height() - 1));
+    return QRect(x - graph_->vertical_cursor_label_width_ / 2 - 1, 0,
+                 graph_->vertical_cursor_label_width_, height());
   }
 }
 
@@ -357,7 +355,7 @@ QRect GraphAxis::GetCurrentValueRect(double value) const {
   assert(value != kGraphUnknownValue);
 
   int y = ConvertValueToScreen(value);
-  return QRect(1, y - kLabelHeight / 2, std::max(0, width() - 1), kLabelHeight);
+  return QRect(0, y - kLabelHeight / 2, width(), kLabelHeight);
 }
 
 void GraphAxis::InvalidateCurrentValue(double value) {
