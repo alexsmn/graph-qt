@@ -4,6 +4,7 @@
 
 #include <QFrame>
 #include <QPen>
+#include <QSplitter>
 #include <cmath>
 #include <deque>
 #include <list>
@@ -66,9 +67,7 @@ class Graph : public QFrame {
   // View
   virtual void paintEvent(QPaintEvent* e) override;
   virtual void resizeEvent(QResizeEvent* e) override;
-  /*virtual View* GetEventHandlerForPoint(const gfx::Point& point);
-  virtual gfx::NativeCursor GetCursor(const gfx::Point& point) const;
-  virtual bool IsFocusable() const { return true; }
+  /*virtual bool IsFocusable() const { return true; }
   virtual void RequestFocus();*/
 
   double right_range_limit_;
@@ -87,8 +86,6 @@ class Graph : public QFrame {
 
  protected:
   virtual void mousePressEvent(QMouseEvent* e) override;
-  virtual void mouseReleaseEvent(QMouseEvent* e) override;
-  virtual void mouseMoveEvent(QMouseEvent* e) override;
 
  private:
   // TODO: Remove friends.
@@ -96,13 +93,6 @@ class Graph : public QFrame {
   friend class GraphLine;
   friend class GraphPane;
   friend class GraphPlot;
-
-  enum State {
-    STATE_MOUSE_DOWN,
-    STATE_IDLE,
-    // TODO: Move to plot.
-    STATE_PANE_RESIZING,
-  };
 
   struct ZoomingHistoryItem {
     GraphRange horizontal_range_;
@@ -118,8 +108,6 @@ class Graph : public QFrame {
   QRect GetContentsBounds() const;
   QRect GetPanesBounds() const;
 
-  GraphPane* GetPaneSizerAt(QPoint point) const;
-
   void InvalidateCursor(const GraphCursor& cursor);
 
   void OnHorizontalRangeUpdated();
@@ -133,15 +121,12 @@ class Graph : public QFrame {
   // FocusChangeListener
   // virtual void OnFocusChanged(View* focused_before, View* focused_now);
 
+  QSplitter* splitter_;
+
   Panes panes_;
 
   GraphCursor* selected_cursor_;
   GraphPane* selected_pane_;
-
-  State state_;
-  QPoint down_point_;  // point on button down
-  QPoint last_point_;  // point on mouse move
-  GraphPane* resizing_pane_;
 
   ZoomingHistory zooming_history_;
 

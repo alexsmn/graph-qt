@@ -37,8 +37,6 @@ std::string FormatTime(base::Time time, const char* format_string) {
 
 Graph::Graph()
     : controller_(nullptr),
-      state_(STATE_IDLE),
-      resizing_pane_(NULL),
       m_time_fit(true),
       right_range_limit_(std::numeric_limits<double>::max()),
       vertical_cursor_label_width_(70),
@@ -47,7 +45,8 @@ Graph::Graph()
       grid_pen_(QColor(237, 237, 237)),
       selected_cursor_pen_(QColor(100, 100, 100)),
       selected_cursor_color_(100, 100, 100),
-      horizontal_axis_(new GraphAxis) {
+      horizontal_axis_(new GraphAxis),
+      splitter_{new QSplitter{this}} {
   horizontal_axis_->Init(this, NULL, false);
   horizontal_axis_->setParent(this);
 
@@ -91,35 +90,9 @@ QRect Graph::GetPanesBounds() const {
 }
 
 void Graph::resizeEvent(QResizeEvent* e) {
-  // Normalize percent.
-  int total_percent = 0;
-  for (Panes::iterator i = panes_.begin(); i != panes_.end(); i++) {
-    GraphPane& pane = **i;
-    total_percent += pane.size_percent_;
-  }
-  for (Panes::iterator i = panes_.begin(); i != panes_.end(); i++) {
-    GraphPane& pane = **i;
-    pane.size_percent_ = pane.size_percent_ * 100 / total_percent;
-  }
-
   auto panes_bounds = GetPanesBounds();
 
-  // Calc new panes bounds.
-  int y = panes_bounds.y();
-  for (Panes::iterator i = panes_.begin(); i != panes_.end(); i++) {
-    GraphPane& pane = **i;
-
-    int size;
-    if (&pane == panes_.back())
-      size = std::max(0, panes_bounds.bottom() - y);
-    else
-      size = pane.size_percent_ * panes_bounds.height() / 100;
-
-    QRect bounds(panes_bounds.x(), y, panes_bounds.width(), size);
-    pane.setGeometry(bounds);
-
-    y += size + 1;
-  }
+  splitter_->setGeometry(panes_bounds);
 
   // Calculate location of time axis.
   auto contents_bounds = GetContentsBounds();
@@ -141,65 +114,6 @@ void Graph::mousePressEvent(QMouseEvent* e) {
       DeleteCursor(*selected_cursor_);
     return;
   }
-
-  if (e->button() != Qt::LeftButton)
-    return;
-
-  down_point_ = last_point_ = e->pos();
-  state_ = STATE_MOUSE_DOWN;
-
-  resizing_pane_ = GetPaneSizerAt(down_point_);
-  if (resizing_pane_) {
-    state_ = STATE_PANE_RESIZING;
-    setCursor(Qt::SizeVerCursor);
-  }
-}
-
-void Graph::mouseMoveEvent(QMouseEvent* e) {
-  switch (state_) {
-    case STATE_PANE_RESIZING: {
-      assert(resizing_pane_);
-      auto panes_bounds = GetPanesBounds();
-      int new_size = e->y() - resizing_pane_->y();
-      int new_size_percent = new_size * 100 / panes_bounds.height();
-      int size_percent_delta = new_size_percent - resizing_pane_->size_percent_;
-      resizing_pane_->size_percent_ += size_percent_delta;
-      GraphPane* next_pane = GetNextPane(resizing_pane_);
-      assert(next_pane);
-      next_pane->size_percent_ -= size_percent_delta;
-      // Layout();
-      if (controller())
-        controller()->OnGraphModified();
-      break;
-    }
-  }
-
-  last_point_ = e->pos();
-}
-
-void Graph::mouseReleaseEvent(QMouseEvent* e) {
-  if (e->button() != Qt::LeftButton)
-    return;
-
-  //  if (state_ != STATE_IDLE && state_ != STATE_MOUSE_DOWN)
-  //    ReleaseCapture();
-  state_ = STATE_IDLE;
-}
-
-/*gfx::NativeCursor Graph::GetCursor(const gfx::Point& point) const {
-  if (state_ == STATE_PANE_RESIZING || GetPaneSizerAt(point))
-    return LoadCursor(NULL, IDC_SIZENS);
-  else
-    return NULL;
-}*/
-
-GraphPane* Graph::GetPaneSizerAt(QPoint point) const {
-  for (Panes::const_iterator i = panes_.begin(); i != panes_.end(); i++) {
-    GraphPane& pane = **i;
-    if (&pane != panes_.back() && abs(point.y() - pane.geometry().bottom()) < 3)
-      return &pane;
-  }
-  return NULL;
 }
 
 GraphPane* Graph::GetNextPane(GraphPane* pane) const {
@@ -369,6 +283,7 @@ void Graph::AddPane(GraphPane& pane) {
   pane.Init(*this);
   pane.setParent(this);
   panes_.push_back(&pane);
+  splitter_->addWidget(&pane);
 }
 
 void Graph::DeleteAllPanes() {
@@ -400,14 +315,7 @@ void Graph::Fit() {
   horizontal_axis().SetRange(range);
 }
 
-/*View* Graph::GetEventHandlerForPoint(const QPoint& point) {
-  if (state_ == STATE_PANE_RESIZING || GetPaneSizerAt(point))
-    return this;
-
-  return __super::GetEventHandlerForPoint(point);
-}
-
-void Graph::OnFocusChanged(View* focused_before, View* focused_now) {
+/*void Graph::OnFocusChanged(View* focused_before, View* focused_now) {
   if (!focused_now)
     return;
 
