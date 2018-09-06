@@ -86,12 +86,9 @@ class Graph : public QFrame {
   static const int kDrawingRectOffsetY = 7;
 
  protected:
-  // View
-  /*virtual bool OnMousePressed(const ui::MouseEvent& event) override;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) override;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) override;
-  virtual void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-  override;*/
+  virtual void mousePressEvent(QMouseEvent* e) override;
+  virtual void mouseReleaseEvent(QMouseEvent* e) override;
+  virtual void mouseMoveEvent(QMouseEvent* e) override;
 
  private:
   // TODO: Remove friends.

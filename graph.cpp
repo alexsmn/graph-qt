@@ -9,7 +9,7 @@
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/graph_widget.h"
 
-#include <QEvent>
+#include <QMouseEvent>
 #include <QPainter>
 #include <algorithm>
 #include <cfloat>
@@ -134,74 +134,59 @@ void Graph::resizeEvent(QResizeEvent* e) {
   update();
 }
 
-/*bool Graph::OnMousePressed(const ui::MouseEvent& event) {
-  RequestFocus();
-
-  if (__super::OnMousePressed(event))
-    return true;
-
-  if (event.IsRightMouseButton()) {
-    if (selected_cursor_) {
-      // delete selected cursor
+void Graph::mousePressEvent(QMouseEvent* e) {
+  if (e->button() == Qt::RightButton) {
+    // delete selected cursor
+    if (selected_cursor_)
       DeleteCursor(*selected_cursor_);
-      return true;
-    }
-    return false;
+    return;
   }
 
-  if (!event.IsLeftMouseButton())
-    return false;
+  if (e->button() != Qt::LeftButton)
+    return;
 
-  down_point_ = last_point_ = event.location();
+  down_point_ = last_point_ = e->pos();
   state_ = STATE_MOUSE_DOWN;
 
   resizing_pane_ = GetPaneSizerAt(down_point_);
   if (resizing_pane_) {
     state_ = STATE_PANE_RESIZING;
-    SetCursor(LoadCursor(NULL, IDC_SIZENS));
-    return true;
+    setCursor(Qt::SizeVerCursor);
   }
-
-  return true;
 }
 
-bool Graph::OnMouseDragged(const ui::MouseEvent& event) {
+void Graph::mouseMoveEvent(QMouseEvent* e) {
   switch (state_) {
     case STATE_PANE_RESIZING: {
       assert(resizing_pane_);
-      gfx::Rect panes_bounds = GetPanesBounds();
-      int new_size = event.y() - resizing_pane_->bounds().y();
+      auto panes_bounds = GetPanesBounds();
+      int new_size = e->y() - resizing_pane_->y();
       int new_size_percent = new_size * 100 / panes_bounds.height();
       int size_percent_delta = new_size_percent - resizing_pane_->size_percent_;
       resizing_pane_->size_percent_ += size_percent_delta;
       GraphPane* next_pane = GetNextPane(resizing_pane_);
       assert(next_pane);
       next_pane->size_percent_ -= size_percent_delta;
-      Layout();
+      // Layout();
       if (controller())
         controller()->OnGraphModified();
       break;
     }
   }
 
-  last_point_ = event.location();
-
-  return true;
+  last_point_ = e->pos();
 }
 
-void Graph::OnMouseReleased(const ui::MouseEvent& event) {
-  __super::OnMouseReleased(event);
-
-  if (!event.IsLeftMouseButton())
+void Graph::mouseReleaseEvent(QMouseEvent* e) {
+  if (e->button() != Qt::LeftButton)
     return;
-    
 
-//  if (state_ != STATE_IDLE && state_ != STATE_MOUSE_DOWN)
-//    ReleaseCapture();
+  //  if (state_ != STATE_IDLE && state_ != STATE_MOUSE_DOWN)
+  //    ReleaseCapture();
   state_ = STATE_IDLE;
 }
 
-gfx::NativeCursor Graph::GetCursor(const gfx::Point& point) const {
+/*gfx::NativeCursor Graph::GetCursor(const gfx::Point& point) const {
   if (state_ == STATE_PANE_RESIZING || GetPaneSizerAt(point))
     return LoadCursor(NULL, IDC_SIZENS);
   else
