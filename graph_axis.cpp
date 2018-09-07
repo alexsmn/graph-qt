@@ -28,6 +28,7 @@ double EstimateValueTickStep(int area_sy, double delta, int min) {
 }
 
 double EstimateTimeTickStep(double scale, int min) {
+  assert(scale >= 0.0);
   static const double times[] = {
       GraphTime::msec,      GraphTime::msec * 5,   GraphTime::msec * 10,
       GraphTime::msec * 50, GraphTime::msec * 100, GraphTime::msec * 500,
@@ -47,6 +48,15 @@ double EstimateTimeTickStep(double scale, int min) {
   return times[_countof(times) - 1];
 }
 
+void Inset(QRect& rect, int left, int top, int right, int bottom) {
+  int new_left = rect.left() + left;
+  int new_top = rect.top() + top;
+  int new_right = rect.right() - right;
+  int new_bottom = rect.bottom() - bottom;
+  rect.setRect(new_left, new_top, std::max(0, new_right - new_left),
+               std::max(0, new_bottom - new_top));
+}
+
 GraphAxis::GraphAxis()
     : graph_(NULL),
       plot_(NULL),
@@ -54,6 +64,7 @@ GraphAxis::GraphAxis()
       tick_step_(0.0),
       moved_(false) {
   setMouseTracking(true);
+  CalcDrawRect();
 }
 
 GraphAxis::~GraphAxis() {}
@@ -232,16 +243,14 @@ QString GraphAxis::GetLabelForValue(double value) const {
   }
 }
 
-void GraphAxis::resizeEvent(QResizeEvent* e) {
-  assert(graph_);
-
+void GraphAxis::CalcDrawRect() {
   draw_rc = QRect(0, 0, width(), height());
 
   // Calculate step of axis and grid.
   double range = range_.delta();
   if (is_vertical_) {
-    draw_rc.adjust(0, Graph::kDrawingRectOffsetY, 0,
-                   -Graph::kDrawingRectOffsetY);
+    Inset(draw_rc, 0, Graph::kDrawingRectOffsetY, 0,
+          Graph::kDrawingRectOffsetY);
 
     if (range_.kind() == GraphRange::LOGICAL)
       tick_step_ = range;
@@ -249,14 +258,19 @@ void GraphAxis::resizeEvent(QResizeEvent* e) {
       tick_step_ = EstimateValueTickStep(draw_rc.height(), range, 30);
 
   } else {
-    draw_rc.adjust(Graph::kDrawingRectOffsetX + 1, 0,
-                   -Graph::kDrawingRectOffsetX - 1, 0);
+    Inset(draw_rc, Graph::kDrawingRectOffsetX + 1, 0,
+          Graph::kDrawingRectOffsetX + 1, 0);
 
     // TODO: Check |range| for zero.
     double factor = draw_rc.width() / range;
     tick_step_ = EstimateTimeTickStep(factor, 50);
   }
+}
 
+void GraphAxis::resizeEvent(QResizeEvent* e) {
+  assert(graph_);
+
+  CalcDrawRect();
   update();
 }
 
@@ -405,7 +419,7 @@ void GraphAxis::SetRange(const GraphRange& range) {
   range_ = range;
 
   // Update tick step.
-  updateGeometry();
+  CalcDrawRect();
 
   if (is_vertical_) {
     // TODO: Don't use pane.

@@ -64,6 +64,8 @@ class GraphAxis : public QWidget {
   void InvalidateCurrentValue(double value);
   void PaintCurrentValue(QPainter& painter, const GraphLine& line);
 
+  void CalcDrawRect();
+
   Graph* graph_;
   GraphPlot* plot_;
   bool is_vertical_;
