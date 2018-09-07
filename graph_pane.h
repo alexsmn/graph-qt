@@ -1,8 +1,8 @@
 #pragma once
 
+#include <qwidget.h>
 #include <cassert>
 #include <memory>
-#include <qwidget.h>
 
 namespace views {
 
@@ -15,7 +15,10 @@ class GraphPane : public QWidget {
   GraphPane();
   virtual ~GraphPane();
 
-  Graph& graph() const { assert(graph_); return *graph_; }
+  Graph& graph() const {
+    assert(graph_);
+    return *graph_;
+  }
   void Init(Graph& graph);
 
   GraphAxis& vertical_axis() const { return *vertical_axis_; }
@@ -24,8 +27,9 @@ class GraphPane : public QWidget {
   int size_percent_;
 
   // QWidget
+  virtual void mousePressEvent(QMouseEvent* e) override;
   virtual void resizeEvent(QResizeEvent* e) override;
-  //virtual void RequestFocus() override;
+  // virtual void RequestFocus() override;
 
  private:
   Graph* graph_;
@@ -35,4 +39,4 @@ class GraphPane : public QWidget {
   std::unique_ptr<GraphPlot> plot_;
 };
 
-} // namespace views
+}  // namespace views

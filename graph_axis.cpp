@@ -276,8 +276,10 @@ void GraphAxis::resizeEvent(QResizeEvent* e) {
 
 void GraphAxis::mousePressEvent(QMouseEvent* event) {
   if (event->button() == Qt::RightButton) {
-    if (graph_->selected_cursor())
+    if (graph_->selected_cursor()) {
       graph_->DeleteCursor(*graph_->selected_cursor());
+      event->ignore();
+    }
     return;
   }
 

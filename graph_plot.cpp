@@ -81,6 +81,8 @@ void GraphPlot::DeleteAllLines() {
 }
 
 void GraphPlot::paintEvent(QPaintEvent* e) {
+  QWidget::paintEvent(e);
+
   QPainter painter(this);
 
   // draw value axis and grid
@@ -143,6 +145,8 @@ void GraphPlot::PaintHorizontalGrid(QPainter& painter) {
 }
 
 void GraphPlot::mousePressEvent(QMouseEvent* e) {
+  QWidget::mousePressEvent(e);
+
   setFocus(Qt::MouseFocusReason);
 
   if (!(e->buttons() & Qt::LeftButton))
@@ -150,10 +154,11 @@ void GraphPlot::mousePressEvent(QMouseEvent* e) {
 
   down_point_ = last_point_ = e->pos();
   state_ = STATE_MOUSE_DOWN;
-  e->accept();
 }
 
 void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
+  QWidget::mouseMoveEvent(e);
+
   auto delta = e->pos() - last_point_;
 
   if (state_ == STATE_MOUSE_DOWN && down_point_ != e->pos()) {
@@ -207,10 +212,11 @@ void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
   }
 
   last_point_ = e->pos();
-  e->accept();
 }
 
 void GraphPlot::mouseReleaseEvent(QMouseEvent* e) {
+  QWidget::mouseReleaseEvent(e);
+
   if (state_ == STATE_ZOOMING) {
     QPainter painter(this);
     PaintZoomRect(painter);
@@ -230,11 +236,12 @@ void GraphPlot::mouseReleaseEvent(QMouseEvent* e) {
   }
 
   state_ = STATE_IDLE;
-  e->accept();
 }
 
 void GraphPlot::leaveEvent(QEvent* e) {
   SetFocusPoint(GraphPoint(), NULL);
+
+  QWidget::leaveEvent(e);
 }
 
 void GraphPlot::PaintZoomRect(QPainter& painter) {
