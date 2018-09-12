@@ -34,8 +34,6 @@ void GraphPane::Init(Graph& graph) {
 void GraphPane::mousePressEvent(QMouseEvent* e) {
   graph_->SelectPane(this);
 
-  setFocus(Qt::MouseFocusReason);
-
   QWidget::mousePressEvent(e);
 }
 

@@ -142,7 +142,7 @@ void GraphAxis::PaintLabel(QPainter& painter, int pos, const QString& label) {
         bounds, Qt::AlignLeft | Qt::AlignVCenter | Qt::TextDontClip, label);
 
   } else {
-    QRect bounds(pos, 2, 0, 0);
+    QRect bounds(pos, 3, 0, 0);
     painter.drawText(bounds, Qt::AlignHCenter | Qt::AlignTop | Qt::TextDontClip,
                      label);
   }
