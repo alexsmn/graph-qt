@@ -14,7 +14,7 @@ namespace views {
 namespace {
 // Correlates to the screen resolution.
 const size_t kMaxPoints = 10000;
-}
+}  // namespace
 
 template <typename T>
 inline T sqr(T x) {
@@ -81,58 +81,56 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
   double x1 = XToValue(rect.x());
   double x2 = XToValue(rect.right());
 
-  PointEnumerator* point_enum = data_source_->EnumPoints(x1, x2, true, true);
-  if (!point_enum)
-    return;
+  QBrush brush(color);
 
   GraphPoint value;
-  if (!point_enum->EnumNext(value))
-    return;
+  PointEnumerator* point_enum = data_source_->EnumPoints(x1, x2, true, true);
+  if (point_enum && point_enum->EnumNext(value)) {
+    // select pen
+    QPen solid_pen(brush, line_weight_);
+    QPen dash_pen(brush, 1, Qt::DotLine);
 
-  // select pen
-  QBrush brush(color);
-  QPen solid_pen(brush, line_weight_);
-  QPen dash_pen(brush, 1, Qt::DotLine);
+    // Draw points.
 
-  // Draw points.
+    QPoint last_point(ValueToX(value.x), ValueToY(value.y));
+    painter.setPen(value.good ? solid_pen : dash_pen);
 
-  QPoint last_point(ValueToX(value.x), ValueToY(value.y));
-  painter.setPen(value.good ? solid_pen : dash_pen);
-
-  while (point_enum->EnumNext(value)) {
-    // current point
-    QPoint point(ValueToX(value.x), ValueToY(value.y));
-    /*if (smooth()) {
-      PolyBezierTo(canvas->native_canvas(), &pt, 1);
-    } else*/
-    {
-      if (stepped()) {
-        QPoint corner_point(point.x(), last_point.y());
-        painter.drawLine(last_point, corner_point);
-        painter.drawLine(corner_point, point);
-      } else {
-        painter.drawLine(last_point, point);
+    while (point_enum->EnumNext(value)) {
+      // current point
+      QPoint point(ValueToX(value.x), ValueToY(value.y));
+      /*if (smooth()) {
+        PolyBezierTo(canvas->native_canvas(), &pt, 1);
+      } else*/
+      {
+        if (stepped()) {
+          QPoint corner_point(point.x(), last_point.y());
+          painter.drawLine(last_point, corner_point);
+          painter.drawLine(corner_point, point);
+        } else {
+          painter.drawLine(last_point, point);
+        }
       }
+
+      // Draw dot on previous point (current draw on current as it will overlap
+      // line).
+      if (dots_shown()) {
+        QRect dot_rect(last_point.x() - line_weight_,
+                       last_point.y() - line_weight_, line_weight_ * 2 + 1,
+                       line_weight_ * 2 + 1);
+        painter.fillRect(dot_rect, color);
+      }
+
+      painter.setPen(value.good ? solid_pen : dash_pen);
+      last_point = point;
     }
 
-    // Draw dot on previous point (current draw on current as it will overlap
-    // line).
+    // Draw last dot.
     if (dots_shown()) {
       QRect dot_rect(last_point.x() - line_weight_,
                      last_point.y() - line_weight_, line_weight_ * 2 + 1,
                      line_weight_ * 2 + 1);
       painter.fillRect(dot_rect, color);
     }
-
-    painter.setPen(value.good ? solid_pen : dash_pen);
-    last_point = point;
-  }
-
-  // Draw last dot.
-  if (dots_shown()) {
-    QRect dot_rect(last_point.x() - line_weight_, last_point.y() - line_weight_,
-                   line_weight_ * 2 + 1, line_weight_ * 2 + 1);
-    painter.fillRect(dot_rect, color);
   }
 
   QPen limits_pen(brush, 1, Qt::DashLine);
@@ -236,7 +234,8 @@ void GraphLine::UpdateAutoRange() {
 }
 
 void GraphLine::AdjustTimeRange(GraphRange& range) const {
-  auto* points = data_source_->EnumPoints(range.low(), range.high(), false, false);
+  auto* points =
+      data_source_->EnumPoints(range.low(), range.high(), false, false);
   if (!points || points->GetCount() <= kMaxPoints)
     return;
 
