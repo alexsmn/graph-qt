@@ -160,7 +160,7 @@ void GraphAxis::PaintCurrentValue(QPainter& painter, const GraphLine& line) {
   if (!painter.clipRegion().intersects(rect))
     return;
 
-  painter.fillRect(rect, line.color);
+  painter.fillRect(rect, line.color());
 
   rect.adjust(5, 0, 0, 0);
 

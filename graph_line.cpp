@@ -30,7 +30,6 @@ GraphLine::GraphLine()
     : plot_(NULL),
       data_source_(NULL),
       flags(STEPPED | AUTO_RANGE | SHOW_DOTS),
-      color(Qt::black),
       line_weight_(1),
       current_value_(kGraphUnknownValue) {}
 
@@ -81,7 +80,7 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
   double x1 = XToValue(rect.x());
   double x2 = XToValue(rect.right());
 
-  QBrush brush(color);
+  QBrush brush(color_);
 
   GraphPoint value;
   PointEnumerator* point_enum = data_source_->EnumPoints(x1, x2, true, true);
@@ -117,7 +116,7 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
         QRect dot_rect(last_point.x() - line_weight_,
                        last_point.y() - line_weight_, line_weight_ * 2 + 1,
                        line_weight_ * 2 + 1);
-        painter.fillRect(dot_rect, color);
+        painter.fillRect(dot_rect, color_);
       }
 
       painter.setPen(value.good ? solid_pen : dash_pen);
@@ -129,7 +128,7 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
       QRect dot_rect(last_point.x() - line_weight_,
                      last_point.y() - line_weight_, line_weight_ * 2 + 1,
                      line_weight_ * 2 + 1);
-      painter.fillRect(dot_rect, color);
+      painter.fillRect(dot_rect, color_);
     }
   }
 
@@ -302,6 +301,16 @@ void GraphLine::UpdateRange() {
     UpdateAutoRange();
   else
     SetRange(data_source_ ? data_source_->range() : GraphRange());
+}
+
+void GraphLine::SetColor(QColor color) {
+  if (color_ == color)
+    return;
+
+  color_ = color;
+
+  if (plot_)
+    plot_->update();
 }
 
 }  // namespace views

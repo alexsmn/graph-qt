@@ -29,6 +29,9 @@ class GraphLine : protected GraphDataSource::Observer {
   GraphLine();
   virtual ~GraphLine();
 
+  QColor color() const { return color_; }
+  void SetColor(QColor color);
+
   GraphDataSource* data_source() { return data_source_; }
   const GraphDataSource* data_source() const { return data_source_; }
   void SetDataSource(GraphDataSource* data_source);
@@ -73,7 +76,6 @@ class GraphLine : protected GraphDataSource::Observer {
   virtual void Draw(QPainter& painter, const QRect& rect);
 
   unsigned flags;
-  QColor color;
   int line_weight_;
 
  protected:
@@ -106,6 +108,8 @@ class GraphLine : protected GraphDataSource::Observer {
   GraphRange range_;
 
   double current_value_;
+
+  QColor color_ = Qt::black;
 
   DISALLOW_COPY_AND_ASSIGN(GraphLine);
 };
