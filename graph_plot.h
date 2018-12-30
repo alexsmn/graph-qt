@@ -82,6 +82,10 @@ class GraphPlot : public QWidget {
   virtual bool GetTooltipText(const gfx::Point& point,
                               base::string16* tooltip) const override;*/
 
+ protected:
+  // QWidget
+  bool event(QEvent* event) override;
+
  private:
   enum State { STATE_MOUSE_DOWN, STATE_IDLE, STATE_PANNING, STATE_ZOOMING };
 

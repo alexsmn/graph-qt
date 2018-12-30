@@ -10,6 +10,7 @@
 
 #include <QMouseEvent>
 #include <QPainter>
+#include <QToolTip>
 #include <limits>
 
 QRect MakeRectFromPoints(const QPoint& a, const QPoint& b) {
@@ -112,7 +113,7 @@ void GraphPlot::paintEvent(QPaintEvent* e) {
   if (focus_line_) {
     QPoint p(focus_line_->ValueToX(focus_point_.x),
              focus_line_->ValueToY(focus_point_.y));
-    painter.fillRect(QRect(p.x() - 3, p.y() - 3, 6, 6), focus_line_->color);
+    painter.fillRect(QRect(p.x() - 3, p.y() - 3, 6, 6), focus_line_->color_);
   }
 
   // Frame.
@@ -351,5 +352,20 @@ void GraphPlot::InvalidateFocusPoint() {
   *tooltip = focus_tooltip_;
   return true;
 }*/
+
+bool GraphPlot::event(QEvent* event) {
+  if (event->type() == QEvent::ToolTip) {
+    if (!focus_tooltip_.isEmpty()) {
+      QHelpEvent& help_event = *static_cast<QHelpEvent*>(event);
+      QToolTip::showText(help_event.globalPos(), focus_tooltip_);
+    } else {
+      QToolTip::hideText();
+      event->ignore();
+    }
+    return true;
+  }
+
+  return QWidget::event(event);
+}
 
 }  // namespace views
