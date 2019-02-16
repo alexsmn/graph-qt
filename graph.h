@@ -27,6 +27,7 @@ class Graph : public QFrame {
    public:
     virtual void OnGraphModified() {}
     virtual void OnGraphSelectPane() {}
+    virtual void OnGraphPannedHorizontally() {}
     virtual void OnLineItemChanged(GraphLine& line) {}
   };
 
@@ -43,7 +44,6 @@ class Graph : public QFrame {
 
   GraphAxis& horizontal_axis() { return *horizontal_axis_; }
 
-  void Fit();
   void UpdateAutoRanges();
   void Zoom(GraphPane& pane,
             const GraphRange& horizontal_range,
@@ -70,9 +70,7 @@ class Graph : public QFrame {
   /*virtual bool IsFocusable() const { return true; }
   virtual void RequestFocus();*/
 
-  double right_range_limit_;
   int vertical_cursor_label_width_;
-  bool m_time_fit;
   QPen grid_pen_;
   QColor selected_cursor_color_;
 
@@ -84,6 +82,10 @@ class Graph : public QFrame {
   static const int kDrawingRectOffsetY = 7;
 
  protected:
+  void AdjustTimeRange(GraphRange& range);
+  void AdjustTimeRange();
+
+  // QWidget
   virtual void mousePressEvent(QMouseEvent* e) override;
 
  private:
@@ -110,9 +112,6 @@ class Graph : public QFrame {
   void InvalidateCursor(const GraphCursor& cursor);
 
   void OnHorizontalRangeUpdated();
-
-  void AdjustTimeRange();
-  void AdjustTimeRange(GraphRange& range);
 
   // Get horizontal label string. Shall be called only in scope of DrawYAxis().
   virtual QString GetXAxisLabel(double value) const;

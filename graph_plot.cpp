@@ -172,19 +172,21 @@ void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
   switch (state_) {
     case STATE_PANNING:
       if (delta.x()) {
-        graph_->m_time_fit = false;
-
         const GraphRange& range = horizontal_axis_->range();
+        auto panning_range_max = horizontal_axis_->panning_range_max();
         double dt = -delta.x() * range.delta() / width();
-        if (graph_->right_range_limit_ != std::numeric_limits<double>::max() &&
-            range.high() + dt > graph_->right_range_limit_) {
-          dt = graph_->right_range_limit_ - range.high();
+        if (panning_range_max != std::numeric_limits<double>::max() &&
+            range.high() + dt > panning_range_max) {
+          dt = panning_range_max - range.high();
         }
 
         GraphRange new_range = range;
         new_range.Offset(dt);
         graph_->AdjustTimeRange(new_range);
         horizontal_axis_->SetRange(new_range);
+
+        if (graph_->controller())
+          graph_->controller()->OnGraphPannedHorizontally();
       }
       break;
 

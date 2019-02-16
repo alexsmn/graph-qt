@@ -62,7 +62,8 @@ GraphAxis::GraphAxis()
       plot_(NULL),
       is_vertical_(false),
       tick_step_(0.0),
-      moved_(false) {
+      moved_(false),
+      panning_range_max_(std::numeric_limits<double>::max()) {
   setMouseTracking(true);
   CalcDrawRect();
 }

@@ -26,6 +26,9 @@ class GraphAxis : public QWidget {
   void SetRange(const GraphRange& range);
   void UpdateRange();
 
+  double panning_range_max() const { return panning_range_max_; }
+  void SetPanningRangeMax(double value) { panning_range_max_ = value; }
+
   // Conversion.
   double ConvertScreenToValue(int pos) const;
   int ConvertValueToScreen(double value) const;
@@ -81,6 +84,8 @@ class GraphAxis : public QWidget {
   QPoint last_point_;  // point on mouse move
 
   QRect draw_rc;
+
+  double panning_range_max_;
 };
 
 }  // namespace views

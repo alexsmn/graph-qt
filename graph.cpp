@@ -38,8 +38,6 @@ std::string FormatTime(base::Time time, const char* format_string) {
 
 Graph::Graph()
     : controller_(nullptr),
-      m_time_fit(true),
-      right_range_limit_(std::numeric_limits<double>::max()),
       vertical_cursor_label_width_(70),
       selected_cursor_(NULL),
       selected_pane_(NULL),
@@ -283,18 +281,6 @@ void Graph::Zoom(GraphPane& pane,
 
   pane.vertical_axis().SetRange(vertical_range);
   horizontal_axis().SetRange(horizontal_range);
-}
-
-void Graph::Fit() {
-  auto range = horizontal_axis().range();
-
-  if (m_time_fit && right_range_limit_ != std::numeric_limits<double>::max()) {
-    range = views::GraphRange{right_range_limit_ - range.delta(),
-                              right_range_limit_, range.kind()};
-  }
-
-  AdjustTimeRange(range);
-  horizontal_axis().SetRange(range);
 }
 
 /*void Graph::OnFocusChanged(View* focused_before, View* focused_now) {
