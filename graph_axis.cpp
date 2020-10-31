@@ -277,9 +277,10 @@ void GraphAxis::resizeEvent(QResizeEvent* e) {
 
 void GraphAxis::mousePressEvent(QMouseEvent* event) {
   if (event->button() == Qt::RightButton) {
+    ignore_context_menu_ = false;
     if (graph_->selected_cursor()) {
       graph_->DeleteCursor(*graph_->selected_cursor());
-      event->ignore();
+      ignore_context_menu_ = true;
     }
     return;
   }
@@ -340,6 +341,13 @@ void GraphAxis::mouseReleaseEvent(QMouseEvent* event) {
     const GraphCursor& cursor = AddCursor(position);
     graph_->SelectCursor(&cursor);
   }
+}
+
+void GraphAxis::contextMenuEvent(QContextMenuEvent* event) {
+  assert(graph_);
+
+  if (!ignore_context_menu_)
+    QWidget::contextMenuEvent(event);
 }
 
 const GraphCursor* GraphAxis::GetCursorLabelAt(QPoint point) const {

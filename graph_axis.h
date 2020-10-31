@@ -48,6 +48,7 @@ class GraphAxis : public QWidget {
   virtual void mouseReleaseEvent(QMouseEvent* event) override;
   virtual void paintEvent(QPaintEvent* e) override;
   virtual void resizeEvent(QResizeEvent* e) override;
+  virtual void contextMenuEvent(QContextMenuEvent* event) override;
 
  private:
   friend class GraphLine;
@@ -86,6 +87,8 @@ class GraphAxis : public QWidget {
   QRect draw_rc;
 
   double panning_range_max_;
+
+  bool ignore_context_menu_ = false;
 };
 
 }  // namespace views
