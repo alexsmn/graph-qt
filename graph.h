@@ -65,6 +65,9 @@ class Graph : public QFrame {
   virtual void UpdateCurBox() {}
   virtual QString GetCursorLabel(const GraphCursor& cursor) const;
 
+  // Get horizontal label string. Shall be called only in scope of DrawYAxis().
+  virtual QString GetXAxisLabel(double value) const;
+
   // View
   virtual void resizeEvent(QResizeEvent* e) override;
   /*virtual bool IsFocusable() const { return true; }
@@ -112,9 +115,6 @@ class Graph : public QFrame {
   void InvalidateCursor(const GraphCursor& cursor);
 
   void OnHorizontalRangeUpdated();
-
-  // Get horizontal label string. Shall be called only in scope of DrawYAxis().
-  virtual QString GetXAxisLabel(double value) const;
 
   // FocusChangeListener
   // virtual void OnFocusChanged(View* focused_before, View* focused_now);
