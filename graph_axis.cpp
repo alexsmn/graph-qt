@@ -158,15 +158,13 @@ void GraphAxis::PaintCurrentValue(QPainter& painter, const GraphLine& line) {
     return;
 
   auto rect = GetCurrentValueRect(value);
-  if (!painter.clipRegion().intersects(rect))
-    return;
 
   painter.fillRect(rect, line.color());
 
   rect.adjust(5, 0, 0, 0);
 
   auto label = line.data_source()->GetYAxisLabel(value);
-  // TODO: text color
+  painter.setPen(Qt::white);
   painter.drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, label);
 }
 
