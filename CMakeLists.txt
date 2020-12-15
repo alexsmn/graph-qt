@@ -1,4 +1,4 @@
-FIND_PACKAGE(Qt5Widgets)
+find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 FILE(GLOB_RECURSE sources
   "*.cpp"
