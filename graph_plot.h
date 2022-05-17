@@ -80,7 +80,7 @@ class GraphPlot : public QWidget {
   virtual void leaveEvent(QEvent* e) override;
   /*virtual bool IsFocusable() const override { return true; }
   virtual bool GetTooltipText(const gfx::Point& point,
-                              base::string16* tooltip) const override;*/
+                              std::u16string* tooltip) const override;*/
 
  protected:
   // QWidget

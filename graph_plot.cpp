@@ -348,7 +348,7 @@ void GraphPlot::InvalidateFocusPoint() {
   update(QRect(p.x() - 3, p.y() - 3, 6, 6));
 }
 
-/*bool GraphPlot::GetTooltipText(const QPoint& p, base::string16* tooltip) const
+/*bool GraphPlot::GetTooltipText(const QPoint& p, std::u16string* tooltip) const
 { if (focus_tooltip_.empty()) return false;
 
   *tooltip = focus_tooltip_;

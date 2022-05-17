@@ -26,7 +26,12 @@ std::string FormatTime(base::Time time, const char* format_string) {
   } else {
     char buf[128];
     time_t t = time.ToTimeT();
+#if defined(WIN32)
+    tm ttmv;
+    tm* ttm = localtime_s(&ttmv, &t) == 0 ? &ttmv : nullptr;
+#else
     tm* ttm = localtime(&t);
+#endif
     if (!ttm)
       return std::string();
     size_t size = strftime(buf, sizeof(buf), format_string, ttm);
