@@ -1,13 +1,13 @@
 #include "graph_qt/graph_line.h"
 
-#include <qpainter.h>
-#include <cfloat>
-
 #include "base/win/scoped_gdi_object.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_axis.h"
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/model/graph_data_source.h"
+
+#include <QPainter>
+#include <cfloat>
 
 namespace views {
 
@@ -27,8 +27,8 @@ inline int CalcPointDistance(const QPoint& a, const QPoint& b) {
 }
 
 GraphLine::GraphLine()
-    : plot_(NULL),
-      data_source_(NULL),
+    : plot_(nullptr),
+      data_source_(nullptr),
       flags(STEPPED | AUTO_RANGE | SHOW_DOTS),
       line_weight_(1),
       current_value_(kGraphUnknownValue) {}
@@ -43,7 +43,7 @@ void GraphLine::SetDataSource(GraphDataSource* data_source) {
     return;
 
   if (data_source_)
-    data_source_->SetObserver(NULL);
+    data_source_->SetObserver(nullptr);
 
   data_source_ = data_source;
 
