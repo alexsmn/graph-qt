@@ -43,6 +43,7 @@ class Graph : public QFrame {
   void SelectPane(GraphPane* pane);
 
   GraphAxis& horizontal_axis() { return *horizontal_axis_; }
+  const GraphAxis& horizontal_axis() const { return *horizontal_axis_; }
 
   void UpdateAutoRanges();
   void Zoom(GraphPane& pane,
