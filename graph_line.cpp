@@ -26,12 +26,7 @@ inline int CalcPointDistance(const QPoint& a, const QPoint& b) {
       sqrt(static_cast<double>(sqr(a.x() - b.x()) + sqr(a.y() - b.y()))));
 }
 
-GraphLine::GraphLine()
-    : plot_(nullptr),
-      data_source_(nullptr),
-      flags(STEPPED | AUTO_RANGE | SHOW_DOTS),
-      line_weight_(1),
-      current_value_(kGraphUnknownValue) {}
+GraphLine::GraphLine() = default;
 
 GraphLine::~GraphLine() {
   if (data_source_)

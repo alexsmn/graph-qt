@@ -1,10 +1,10 @@
 #pragma once
 
-#include <cassert>
-#include <QColor>
-
 #include "graph_qt/model/graph_data_source.h"
 #include "graph_qt/model/graph_range.h"
+
+#include <QColor>
+#include <cassert>
 
 class QPainter;
 class QPen;
@@ -18,14 +18,6 @@ struct GraphPoint;
 
 class GraphLine : protected GraphDataSource::Observer {
  public:
-  // graph line flags
-  enum {
-    STEPPED = 0x0001,
-    AUTO_RANGE = 0x0002,
-    SHOW_DOTS = 0x0004,
-    SMOOTH = 0x0008,
-  };
-
   GraphLine();
   virtual ~GraphLine();
 
@@ -41,10 +33,10 @@ class GraphLine : protected GraphDataSource::Observer {
     return *plot_;
   }
 
-  bool stepped() const { return (flags & STEPPED) != 0; }
-  bool auto_range() const { return (flags & AUTO_RANGE) != 0; }
-  bool dots_shown() const { return (flags & SHOW_DOTS) != 0; }
-  bool smooth() const { return (flags & SMOOTH) != 0; }
+  bool stepped() const { return (flags_ & STEPPED) != 0; }
+  bool auto_range() const { return (flags_ & AUTO_RANGE) != 0; }
+  bool dots_shown() const { return (flags_ & SHOW_DOTS) != 0; }
+  bool smooth() const { return (flags_ & SMOOTH) != 0; }
 
   void set_auto_range(bool auto_range) { set_flag(AUTO_RANGE, auto_range); }
   void set_dots_shown(bool shown) { set_flag(SHOW_DOTS, shown); }
@@ -75,9 +67,6 @@ class GraphLine : protected GraphDataSource::Observer {
 
   virtual void Draw(QPainter& painter, const QRect& rect);
 
-  unsigned flags;
-  int line_weight_;
-
  protected:
   // GraphDataSource::Observer
   virtual void OnDataSourceItemChanged() override;
@@ -85,8 +74,13 @@ class GraphLine : protected GraphDataSource::Observer {
   virtual void OnDataSourceCurrentValueChanged() override;
 
  private:
-  friend class Graph;
-  friend class GraphPlot;
+  // graph line flags_
+  enum {
+    STEPPED = 0x0001,
+    AUTO_RANGE = 0x0002,
+    SHOW_DOTS = 0x0004,
+    SMOOTH = 0x0008,
+  };
 
   void UpdateRange();
   GraphRange CalculateAutoRange();
@@ -94,25 +88,29 @@ class GraphLine : protected GraphDataSource::Observer {
 
   void set_flag(int flag, bool set) {
     if (set)
-      flags |= flag;
+      flags_ |= flag;
     else
-      flags &= ~flag;
+      flags_ &= ~flag;
   }
 
   void SetCurrentValue(double value);
 
-  GraphPlot* plot_;
+  GraphPlot* plot_ = nullptr;
 
-  GraphDataSource* data_source_;
+  GraphDataSource* data_source_ = nullptr;
 
   // Available range.
   GraphRange range_;
 
-  double current_value_;
+  double current_value_ = kGraphUnknownValue;
 
   QColor color_ = Qt::black;
 
-  DISALLOW_COPY_AND_ASSIGN(GraphLine);
+  unsigned flags_ = STEPPED | AUTO_RANGE | SHOW_DOTS;
+  int line_weight_ = 1;
+
+  friend class Graph;
+  friend class GraphPlot;
 };
 
 }  // namespace views
