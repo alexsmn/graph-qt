@@ -46,6 +46,8 @@ class GraphLine : protected GraphDataSource::Observer {
   const GraphRange& range() const { return range_; }
   void SetRange(const GraphRange& range);
 
+  GraphRange GetHorizontalRange() const;
+
   double current_value() const { return current_value_; }
 
   void UpdateAutoRange();

@@ -310,4 +310,8 @@ void GraphLine::SetColor(QColor color) {
     plot_->update();
 }
 
+GraphRange GraphLine::GetHorizontalRange() const {
+  return data_source_ ? data_source_->GetHorizontalRange() : GraphRange{};
+}
+
 }  // namespace views

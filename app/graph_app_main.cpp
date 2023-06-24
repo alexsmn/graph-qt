@@ -64,7 +64,7 @@ class TestDataSource : public GraphDataSource {
     return new TestPointEnumerator{points_};
   }
 
-  GraphRange GetHorizontalRange() const {
+  virtual GraphRange GetHorizontalRange() const override {
     return {points_.front().x, points_.back().x};
   }
 
