@@ -1,7 +1,7 @@
 #pragma once
 
-#include <qcolor.h>
 #include <cassert>
+#include <QColor>
 
 #include "graph_qt/model/graph_data_source.h"
 #include "graph_qt/model/graph_range.h"
@@ -105,6 +105,7 @@ class GraphLine : protected GraphDataSource::Observer {
 
   GraphDataSource* data_source_;
 
+  // Available range.
   GraphRange range_;
 
   double current_value_;

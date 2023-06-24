@@ -12,7 +12,7 @@ class GraphPlot;
 
 class GraphAxis : public QWidget {
  public:
-  GraphAxis();
+  explicit GraphAxis(QWidget* parent = nullptr);
   ~GraphAxis();
 
   void Init(Graph* graph, GraphPlot* plot, bool is_vertical);
@@ -26,6 +26,9 @@ class GraphAxis : public QWidget {
   void SetRange(const GraphRange& range);
   void UpdateRange();
 
+  double panning_range_min() const { return panning_range_min_; }
+  void SetPanningRangeMin(double value) { panning_range_min_ = value; }
+
   double panning_range_max() const { return panning_range_max_; }
   void SetPanningRangeMax(double value) { panning_range_max_ = value; }
 
@@ -36,7 +39,7 @@ class GraphAxis : public QWidget {
   double tick_step() const { return tick_step_; }
   void GetTickValues(double& first_value, double& last_value) const;
 
-  typedef std::vector<GraphCursor> Cursors;
+  using Cursors = std::vector<GraphCursor>;
   const Cursors& cursors() const { return cursors_; }
   const GraphCursor& AddCursor(double position);
   void DeleteCursor(const GraphCursor& cursor);
@@ -70,23 +73,24 @@ class GraphAxis : public QWidget {
 
   void CalcDrawRect();
 
-  Graph* graph_;
-  GraphPlot* plot_;
-  bool is_vertical_;
+  Graph* graph_ = nullptr;
+  GraphPlot* plot_ = nullptr;
+  bool is_vertical_ = false;
 
   GraphRange range_;
 
-  double tick_step_;
+  double tick_step_ = 0.0;
 
   Cursors cursors_;
 
-  bool moved_;
+  bool moved_ = false;
   QPoint down_point_;  // point on button down
   QPoint last_point_;  // point on mouse move
 
   QRect draw_rc;
 
-  double panning_range_max_;
+  double panning_range_min_ = std::numeric_limits<double>::min();
+  double panning_range_max_ = std::numeric_limits<double>::max();
 
   bool ignore_context_menu_ = false;
 };

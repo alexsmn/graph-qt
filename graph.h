@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+class QScrollBar;
 class QSplitter;
 
 namespace views {
@@ -21,7 +22,7 @@ class GraphPane;
 
 class Graph : public QFrame {
  public:
-  typedef std::list<GraphPane*> Panes;
+  using Panes = std::list<GraphPane*>;
 
   class Controller {
    public:
@@ -44,6 +45,12 @@ class Graph : public QFrame {
 
   GraphAxis& horizontal_axis() { return *horizontal_axis_; }
   const GraphAxis& horizontal_axis() const { return *horizontal_axis_; }
+
+  QScrollBar& horizontal_scroll_bar() { return *horizontal_scroll_bar_; }
+  const QScrollBar& horizontal_scroll_bar() const {
+    return *horizontal_scroll_bar_;
+  }
+  void setHorizontalScrollMin(double value);
 
   void UpdateAutoRanges();
   void Zoom(GraphPane& pane,
@@ -74,12 +81,13 @@ class Graph : public QFrame {
   /*virtual bool IsFocusable() const { return true; }
   virtual void RequestFocus();*/
 
-  int vertical_cursor_label_width_;
-  QPen grid_pen_;
-  QColor selected_cursor_color_;
+  int vertical_cursor_label_width_ = 70;
+  QPen grid_pen_{QColor(237, 237, 237)};
+  QColor selected_cursor_color_{100, 100, 100};
 
   static const int kVerticalAxisWidth = 50;
   static const int kHorizontalAxisHeight = 20;
+  static const int kHorizontalScrollBarHeight = 20;
 
   // Offsets from graph area.
   static const int kDrawingRectOffsetX = 10;
@@ -93,12 +101,6 @@ class Graph : public QFrame {
   virtual void mousePressEvent(QMouseEvent* e) override;
 
  private:
-  // TODO: Remove friends.
-  friend class GraphAxis;
-  friend class GraphLine;
-  friend class GraphPane;
-  friend class GraphPlot;
-
   struct ZoomingHistoryItem {
     GraphRange horizontal_range_;
     // If |pane_| is NULL then this pane was removed. Only horizontal range
@@ -108,7 +110,7 @@ class Graph : public QFrame {
     GraphRange pane_range_;
   };
 
-  typedef std::deque<ZoomingHistoryItem> ZoomingHistory;
+  using ZoomingHistory = std::deque<ZoomingHistoryItem>;
 
   QRect GetContentsBounds() const;
   QRect GetPanesBounds() const;
@@ -117,21 +119,32 @@ class Graph : public QFrame {
 
   void OnHorizontalRangeUpdated();
 
+  void UpdateHorizontalScrollRange();
+
   // FocusChangeListener
   // virtual void OnFocusChanged(View* focused_before, View* focused_now);
 
-  QSplitter* splitter_;
+  QSplitter* splitter_ = nullptr;
 
   Panes panes_;
 
-  GraphCursor* selected_cursor_;
-  GraphPane* selected_pane_;
+  GraphCursor* selected_cursor_ = nullptr;
+  GraphPane* selected_pane_ = nullptr;
 
   ZoomingHistory zooming_history_;
 
-  Controller* controller_;
+  Controller* controller_ = nullptr;
 
-  GraphAxis* horizontal_axis_;
+  GraphAxis* horizontal_axis_ = nullptr;
+
+  QScrollBar* horizontal_scroll_bar_ = nullptr;
+  double horizontal_scroll_min_ = 0.0;
+
+  // TODO: Remove friends.
+  friend class GraphAxis;
+  friend class GraphLine;
+  friend class GraphPane;
+  friend class GraphPlot;
 };
 
 }  // namespace views

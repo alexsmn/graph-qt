@@ -6,6 +6,7 @@
 #include "graph_qt/graph_widget.h"
 
 #include <QApplication>
+#include <QScrollBar>
 #include <span>
 #include <vector>
 
@@ -35,7 +36,9 @@ class TestPointEnumerator : public PointEnumerator {
 class TestDataSource : public GraphDataSource {
  public:
   explicit TestDataSource(std::vector<GraphPoint> points)
-      : points_{std::move(points)} {}
+      : points_{std::move(points)} {
+    
+}
 
   virtual PointEnumerator* EnumPoints(double from,
                                       double to,
@@ -52,12 +55,13 @@ int main(int argc, char** argv) {
   QApplication app{argc, argv};
 
   Graph graph;
+  graph.setMinimumSize({1200, 800});
 
   auto* pane = new GraphPane{};
   graph.AddPane(*pane);
 
   std::vector<GraphPoint> points;
-  for (int i = 0; i < 10; ++i) {
+  for (int i = 0; i < 1000; i += 10) {
     points.emplace_back(i, i);
   }
 
@@ -67,7 +71,10 @@ int main(int argc, char** argv) {
   line->SetDataSource(data_source);
   pane->plot().AddLine(*line);
 
-  graph.horizontal_axis().SetRange({0, 10});
+  graph.horizontal_axis().SetRange({300, 400});
+
+  graph.horizontal_scroll_bar().setVisible(true);
+  graph.horizontal_scroll_bar().setRange(0, 1000);
 
   graph.show();
 

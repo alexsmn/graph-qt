@@ -9,9 +9,12 @@
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/graph_widget.h"
 
+#include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QScrollBar>
 #include <QSplitter>
+#include <QVBoxLayout>
 #include <algorithm>
 #include <cfloat>
 
@@ -19,20 +22,34 @@ namespace views {
 
 // Graph
 
-Graph::Graph()
-    : controller_(nullptr),
-      vertical_cursor_label_width_(70),
-      selected_cursor_(NULL),
-      selected_pane_(NULL),
-      grid_pen_(QColor(237, 237, 237)),
-      selected_cursor_color_(100, 100, 100),
-      horizontal_axis_(new GraphAxis),
-      splitter_{new QSplitter{this}} {
-  horizontal_axis_->Init(this, NULL, false);
-  horizontal_axis_->setParent(this);
+Graph::Graph() {
+  setLayout(new QVBoxLayout{this});
+  layout()->setMargin(0);
+  layout()->setSpacing(0);
 
+  splitter_ = new QSplitter{this};
   splitter_->setOrientation(Qt::Vertical);
   splitter_->setHandleWidth(0);
+  layout()->addWidget(splitter_);
+
+  // The bottom layout row under the panes. It contains both the horizontal axis
+  // and the scroll bar, as they are both indented from the right by the width
+  // of the vertical axis.
+  auto* bottom_layout = new QVBoxLayout{this};
+  bottom_layout->setContentsMargins(0, 0, kVerticalAxisWidth, 0);
+  bottom_layout->setSpacing(0);
+  layout()->addItem(bottom_layout);
+
+  horizontal_axis_ = new GraphAxis{this};
+  horizontal_axis_->Init(this, nullptr, false);
+  horizontal_axis_->setMinimumHeight(kHorizontalAxisHeight);
+  bottom_layout->addWidget(horizontal_axis_);
+
+  horizontal_scroll_bar_ = new QScrollBar{this};
+  horizontal_scroll_bar_->setOrientation(Qt::Horizontal);
+  horizontal_scroll_bar_->setRange(0, 0);
+  horizontal_scroll_bar_->setVisible(false);
+  bottom_layout->addWidget(horizontal_scroll_bar_);
 
   setFrameStyle(QFrame::StyledPanel);
   setStyleSheet("background-color: white;");
@@ -50,20 +67,32 @@ QRect Graph::GetContentsBounds() const {
 
 QRect Graph::GetPanesBounds() const {
   QRect bounds = GetContentsBounds();
-  bounds.setHeight(std::max(0, bounds.height() - kHorizontalAxisHeight - 1));
+  bounds.setHeight(std::max(0, bounds.height() - kHorizontalAxisHeight -
+                                   kHorizontalScrollBarHeight - 1));
   return bounds;
 }
 
 void Graph::resizeEvent(QResizeEvent* e) {
+  QFrame::resizeEvent(e);
+  return;
+
   splitter_->setGeometry(GetPanesBounds());
 
   // Calculate location of time axis.
   auto contents_bounds = GetContentsBounds();
-  QRect horz_axis_bounds(
-      contents_bounds.x() - 1, contents_bounds.bottom() - kHorizontalAxisHeight,
+
+  QRect horz_axis_bounds{
+      contents_bounds.x() - 1,
+      contents_bounds.bottom() - kHorizontalAxisHeight -
+          kHorizontalScrollBarHeight,
       std::max(0, contents_bounds.width() - kVerticalAxisWidth + 2),
-      kHorizontalAxisHeight);
+      kHorizontalAxisHeight};
+
   horizontal_axis_->setGeometry(horz_axis_bounds);
+
+  horizontal_scroll_bar_->setGeometry(
+      QRect{contents_bounds.x() - 1, horz_axis_bounds.bottom(),
+            contents_bounds.width(), kHorizontalScrollBarHeight});
 
   OnHorizontalRangeUpdated();
 
@@ -81,38 +110,37 @@ void Graph::mousePressEvent(QMouseEvent* e) {
 
 GraphPane* Graph::GetNextPane(GraphPane* pane) const {
   assert(pane);
-  Panes::const_iterator i = std::find(panes_.begin(), panes_.end(), pane);
+  auto i = std::find(panes_.begin(), panes_.end(), pane);
   if (i == panes_.end())
-    return NULL;
+    return nullptr;
   i++;
   if (i == panes_.end())
-    return NULL;
+    return nullptr;
   return *i;
 }
 
 GraphPane* Graph::GetPrevPane(GraphPane* pane) const {
   assert(pane);
-  Panes::const_iterator i = std::find(panes_.begin(), panes_.end(), pane);
+  auto i = std::find(panes_.begin(), panes_.end(), pane);
   if (i == panes_.begin())
-    return NULL;
+    return nullptr;
   i--;
   return *i;
 }
 
 void Graph::DeletePane(GraphPane& pane) {
   // Remove from zooming history.
-  for (ZoomingHistory::iterator i = zooming_history_.begin();
-       i != zooming_history_.end(); ++i) {
+  for (auto i = zooming_history_.begin(); i != zooming_history_.end(); ++i) {
     ZoomingHistoryItem& item = *i;
     if (item.pane_ == &pane)
-      item.pane_ = NULL;
+      item.pane_ = nullptr;
   }
 
   if (&pane == selected_pane_)
-    SelectPane(NULL);
+    SelectPane(nullptr);
 
   // delete pane from chart
-  Panes::iterator pi = std::find(panes_.begin(), panes_.end(), &pane);
+  auto pi = std::find(panes_.begin(), panes_.end(), &pane);
   assert(pi != panes_.end());
   panes_.erase(pi);
 
@@ -139,7 +167,7 @@ void Graph::InvalidateCursor(const GraphCursor& cursor) {
     cursor.axis_->plot()->InvalidateCursor(cursor);
 
   } else {
-    for (Panes::iterator i = panes_.begin(); i != panes_.end(); ++i)
+    for (auto i = panes_.begin(); i != panes_.end(); ++i)
       (*i)->plot().InvalidateCursor(cursor);
   }
 
@@ -173,7 +201,7 @@ void Graph::DeleteCursor(const GraphCursor& cursor) {
   InvalidateCursor(cursor);
 
   if (selected_cursor_ == &cursor)
-    selected_cursor_ = NULL;
+    selected_cursor_ = nullptr;
 
   cursor.axis_->DeleteCursor(cursor);
 
@@ -195,14 +223,14 @@ void Graph::AdjustTimeRange(GraphRange& range) {
 
 void Graph::OnHorizontalRangeUpdated() {
   UpdateAutoRanges();
+  UpdateHorizontalScrollRange();
 }
 
 void Graph::UpdateAutoRanges() {
-  for (Panes::iterator i = panes_.begin(); i != panes_.end(); ++i) {
+  for (auto i = panes_.begin(); i != panes_.end(); ++i) {
     GraphPane& pane = **i;
     const GraphPlot::Lines& lines = pane.plot().lines();
-    for (GraphPlot::Lines::const_iterator i = lines.begin(); i != lines.end();
-         ++i)
+    for (auto i = lines.begin(); i != lines.end(); ++i)
       (*i)->UpdateAutoRange();
   }
 }
@@ -231,7 +259,7 @@ void Graph::AddPane(GraphPane& pane) {
 }
 
 void Graph::DeleteAllPanes() {
-  for (Panes::iterator i = panes_.begin(); i != panes_.end(); i++)
+  for (auto i = panes_.begin(); i != panes_.end(); i++)
     delete *i;
   panes_.clear();
 }
@@ -278,5 +306,19 @@ void Graph::RequestFocus() {
   else
     View::RequestFocus();
 }*/
+
+void Graph::setHorizontalScrollMin(double value) {
+  if (horizontal_scroll_min_ == value) {
+    return;
+  }
+
+  horizontal_scroll_min_ = value;
+  UpdateHorizontalScrollRange();
+}
+
+void Graph::UpdateHorizontalScrollRange() {
+  auto range = horizontal_axis_->range();
+  // horizontal_scroll_bar_->setRange(min, max);
+}
 
 }  // namespace views

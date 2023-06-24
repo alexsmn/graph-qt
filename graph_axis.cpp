@@ -1,14 +1,14 @@
 #include "graph_qt/graph_axis.h"
 
-#include <QMouseEvent>
-#include <QPainter>
-
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/graph_time.h"
 #include "graph_qt/model/graph_data_source.h"
+
+#include <QMouseEvent>
+#include <QPainter>
 
 namespace views {
 
@@ -57,18 +57,12 @@ void Inset(QRect& rect, int left, int top, int right, int bottom) {
                std::max(0, new_bottom - new_top));
 }
 
-GraphAxis::GraphAxis()
-    : graph_(NULL),
-      plot_(NULL),
-      is_vertical_(false),
-      tick_step_(0.0),
-      moved_(false),
-      panning_range_max_(std::numeric_limits<double>::max()) {
+GraphAxis::GraphAxis(QWidget* parent) : QWidget{parent} {
   setMouseTracking(true);
   CalcDrawRect();
 }
 
-GraphAxis::~GraphAxis() {}
+GraphAxis::~GraphAxis() = default;
 
 void GraphAxis::Init(Graph* graph, GraphPlot* plot, bool is_vertical) {
   graph_ = graph;
@@ -284,7 +278,7 @@ void GraphAxis::mousePressEvent(QMouseEvent* event) {
   }
 
   if (graph_->selected_cursor_) {
-    graph_->SelectCursor(NULL);
+    graph_->SelectCursor(nullptr);
     return;
   }
 
@@ -349,14 +343,14 @@ void GraphAxis::contextMenuEvent(QContextMenuEvent* event) {
 }
 
 const GraphCursor* GraphAxis::GetCursorLabelAt(QPoint point) const {
-  for (Cursors::const_iterator i = cursors_.begin(); i != cursors_.end(); ++i) {
+  for (auto i = cursors_.begin(); i != cursors_.end(); ++i) {
     const GraphCursor& cursor = *i;
     auto rect = GetCursorLabelRect(cursor);
     if (rect.contains(point))
       return &cursor;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 void GraphAxis::PaintCursorLabel(QPainter& painter, const GraphCursor& cursor) {
@@ -394,7 +388,7 @@ void GraphAxis::UpdateRange() {
   double high = kGraphUnknownValue;
   bool logical = false;
 
-  GraphPlot::Lines::const_iterator i = lines.begin();
+  auto i = lines.begin();
   const GraphLine& line = **i;
   low = line.range().low();
   high = line.range().high();

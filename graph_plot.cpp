@@ -358,7 +358,7 @@ void GraphPlot::InvalidateFocusPoint() {
 bool GraphPlot::event(QEvent* event) {
   if (event->type() == QEvent::ToolTip) {
     if (!focus_tooltip_.isEmpty()) {
-      QHelpEvent& help_event = *static_cast<QHelpEvent*>(event);
+      const QHelpEvent& help_event = *static_cast<const QHelpEvent*>(event);
       QToolTip::showText(help_event.globalPos(), focus_tooltip_);
     } else {
       QToolTip::hideText();
