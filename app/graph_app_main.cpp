@@ -7,10 +7,12 @@
 
 #include <QApplication>
 #include <QScrollBar>
+#include <QTimer>
 #include <span>
 #include <vector>
 
 using namespace views;
+using namespace std::chrono_literals;
 
 class TestPointEnumerator : public PointEnumerator {
  public:
@@ -35,10 +37,25 @@ class TestPointEnumerator : public PointEnumerator {
 
 class TestDataSource : public GraphDataSource {
  public:
-  explicit TestDataSource(std::vector<GraphPoint> points)
-      : points_{std::move(points)} {
-    
-}
+  TestDataSource() {
+    for (int i = 0; i < 100; ++i) {
+      points_.emplace_back(i, i);
+    }
+
+    timer_.setInterval(1s);
+
+    QObject::connect(&timer_, &QTimer::timeout, [this] {
+      points_.emplace_back(points_.size(), points_.size());
+      if (observer_) {
+        observer_->OnDataSourceCurrentValueChanged();
+        observer_->OnDataSourceHistoryChanged();
+      }
+    });
+
+    timer_.start();
+  }
+
+  virtual double GetCurrentValue() const override { return points_.back().y; }
 
   virtual PointEnumerator* EnumPoints(double from,
                                       double to,
@@ -47,8 +64,13 @@ class TestDataSource : public GraphDataSource {
     return new TestPointEnumerator{points_};
   }
 
+  GraphRange GetHorizontalRange() const {
+    return {points_.front().x, points_.back().x};
+  }
+
  private:
-  const std::vector<GraphPoint> points_;
+  std::vector<GraphPoint> points_;
+  QTimer timer_;
 };
 
 int main(int argc, char** argv) {
@@ -60,21 +82,13 @@ int main(int argc, char** argv) {
   auto* pane = new GraphPane{};
   graph.AddPane(*pane);
 
-  std::vector<GraphPoint> points;
-  for (int i = 0; i < 1000; i += 10) {
-    points.emplace_back(i, i);
-  }
-
-  auto* data_source = new TestDataSource{std::move(points)};
-
   auto* line = new GraphLine{};
-  line->SetDataSource(data_source);
+  line->SetDataSource(new TestDataSource);
   pane->plot().AddLine(*line);
 
-  graph.horizontal_axis().SetRange({300, 400});
+  graph.horizontal_axis().SetRange({20, 80});
 
   graph.horizontal_scroll_bar().setVisible(true);
-  graph.horizontal_scroll_bar().setRange(0, 1000);
 
   graph.show();
 

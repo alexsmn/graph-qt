@@ -21,9 +21,6 @@ class GraphDataSource {
  public:
   class Observer {
    public:
-    virtual ~Observer() {}
-
-    // History changed.
     virtual void OnDataSourceHistoryChanged() {}
     virtual void OnDataSourceCurrentValueChanged() {}
     virtual void OnDataSourceItemChanged() {}
@@ -35,32 +32,30 @@ class GraphDataSource {
 
   void SetObserver(Observer* observer) { observer_ = observer; }
 
-  const GraphRange& range() const { return range_; }
+  virtual double GetCurrentValue() const { return kGraphUnknownValue; };
 
-  double current_value() const { return current_value_; }
-  void SetCurrentValue(double value);
-
-  virtual PointEnumerator* EnumPoints(double from, double to,
+  virtual PointEnumerator* EnumPoints(double from,
+                                      double to,
                                       bool include_left_bound,
                                       bool include_right_bound) = 0;
 
   virtual QString GetYAxisLabel(double value) const;
 
+  virtual GraphRange GetVerticalRange() const { return GraphRange{}; }
+
   GraphRange CalculateAutoRange(double x1, double x2);
 
-  GraphRange range_;
-
   // Limits.
-  double limit_lo_;
-  double limit_hi_;
-  double limit_lolo_;
-  double limit_hihi_;
+  double limit_lo_ = kGraphUnknownValue;
+  double limit_hi_ = kGraphUnknownValue;
+  double limit_lolo_ = kGraphUnknownValue;
+  double limit_hihi_ = kGraphUnknownValue;
 
  protected:
-  Observer* observer_;
+  Observer* observer_ = nullptr;
 
  private:
-  double current_value_;
+  double current_value_ = kGraphUnknownValue;
 };
 
-} // namespace views
+}  // namespace views

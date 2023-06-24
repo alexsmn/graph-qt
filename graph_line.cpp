@@ -45,7 +45,7 @@ void GraphLine::SetDataSource(GraphDataSource* data_source) {
   if (data_source_)
     data_source_->SetObserver(this);
 
-  SetCurrentValue(data_source_ ? data_source_->current_value()
+  SetCurrentValue(data_source_ ? data_source_->GetCurrentValue()
                                : kGraphUnknownValue);
 
   UpdateRange();
@@ -142,13 +142,15 @@ void GraphLine::SetCurrentValue(double value) {
   if (current_value_ == value)
     return;
 
-  if (current_value_ != kGraphUnknownValue)
-    plot().vertical_axis().InvalidateCurrentValue(current_value_);
+  if (plot_ && current_value_ != kGraphUnknownValue) {
+    plot_->vertical_axis().InvalidateCurrentValue(current_value_);
+  }
 
   current_value_ = value;
 
-  if (current_value_ != kGraphUnknownValue)
-    plot().vertical_axis().InvalidateCurrentValue(current_value_);
+  if (plot_ && current_value_ != kGraphUnknownValue) {
+    plot_->vertical_axis().InvalidateCurrentValue(current_value_);
+  }
 }
 
 double GraphLine::XToValue(int x) const {
@@ -288,14 +290,14 @@ void GraphLine::OnDataSourceHistoryChanged() {
 }
 
 void GraphLine::OnDataSourceCurrentValueChanged() {
-  SetCurrentValue(data_source_->current_value());
+  SetCurrentValue(data_source_->GetCurrentValue());
 }
 
 void GraphLine::UpdateRange() {
   if (auto_range())
     UpdateAutoRange();
   else
-    SetRange(data_source_ ? data_source_->range() : GraphRange());
+    SetRange(data_source_ ? data_source_->GetVerticalRange() : GraphRange{});
 }
 
 void GraphLine::SetColor(QColor color) {
