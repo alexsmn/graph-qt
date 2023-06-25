@@ -1,9 +1,9 @@
 #pragma once
 
-#include <qwidget.h>
-
 #include "graph_qt/graph_cursor.h"
 #include "graph_qt/model/graph_range.h"
+
+#include <QWidget>
 
 namespace views {
 
@@ -11,6 +11,8 @@ class Graph;
 class GraphPlot;
 
 class GraphAxis : public QWidget {
+  Q_OBJECT
+
  public:
   explicit GraphAxis(QWidget* parent = nullptr);
   ~GraphAxis();
@@ -52,6 +54,9 @@ class GraphAxis : public QWidget {
   virtual void paintEvent(QPaintEvent* e) override;
   virtual void resizeEvent(QResizeEvent* e) override;
   virtual void contextMenuEvent(QContextMenuEvent* event) override;
+
+ signals:
+  void rangeChanged(const GraphRange& range);
 
  private:
   friend class GraphLine;

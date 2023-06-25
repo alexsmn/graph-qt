@@ -230,7 +230,7 @@ void GraphLine::UpdateAutoRange() {
 }
 
 void GraphLine::AdjustTimeRange(GraphRange& range) const {
-  auto* points =
+  const auto* points =
       data_source_->EnumPoints(range.low(), range.high(), false, false);
   if (!points || points->GetCount() <= kMaxPoints)
     return;
@@ -273,7 +273,6 @@ void GraphLine::OnDataSourceItemChanged() {
 
   if (plot_) {
     plot_->graph().AdjustTimeRange();
-
     plot_->update();
   }
 }

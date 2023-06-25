@@ -19,6 +19,7 @@ class GraphAxis;
 class GraphCursor;
 class GraphLine;
 class GraphPane;
+class HorizontalScrollBarController;
 
 class Graph : public QFrame {
  public:
@@ -50,8 +51,6 @@ class Graph : public QFrame {
   const QScrollBar& horizontal_scroll_bar() const {
     return *horizontal_scroll_bar_;
   }
-  void setHorizontalScrollMin(double value);
-
   void UpdateAutoRanges();
   void Zoom(GraphPane& pane,
             const GraphRange& horizontal_range,
@@ -77,7 +76,6 @@ class Graph : public QFrame {
   virtual QString GetXAxisLabel(double value) const;
 
   // View
-  virtual void resizeEvent(QResizeEvent* e) override;
   /*virtual bool IsFocusable() const { return true; }
   virtual void RequestFocus();*/
 
@@ -94,7 +92,7 @@ class Graph : public QFrame {
   static const int kDrawingRectOffsetY = 7;
 
  protected:
-  void AdjustTimeRange(GraphRange& range);
+  void AdjustTimeRange(GraphRange& range) const;
   void AdjustTimeRange();
 
   // QWidget
@@ -112,14 +110,10 @@ class Graph : public QFrame {
 
   using ZoomingHistory = std::deque<ZoomingHistoryItem>;
 
-  QRect GetContentsBounds() const;
-  QRect GetPanesBounds() const;
-
   void InvalidateCursor(const GraphCursor& cursor);
 
-  void OnHorizontalRangeUpdated();
-
-  void UpdateHorizontalScrollRange();
+  void OnHorizontalAxisRangeChanged();
+  GraphRange GetTotalHorizontalRange() const;
 
   // FocusChangeListener
   // virtual void OnFocusChanged(View* focused_before, View* focused_now);
@@ -138,7 +132,9 @@ class Graph : public QFrame {
   GraphAxis* horizontal_axis_ = nullptr;
 
   QScrollBar* horizontal_scroll_bar_ = nullptr;
-  double horizontal_scroll_min_ = 0.0;
+
+  std::unique_ptr<HorizontalScrollBarController>
+      horizontal_scroll_bar_controller_;
 
   // TODO: Remove friends.
   friend class GraphAxis;

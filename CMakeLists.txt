@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.26)
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
-file(GLOB SOURCES
+file(GLOB SOURCES CONFIGURE_DEPENDS
   "*.cpp"
   "*.h"
   "model/*.cpp"
@@ -19,5 +19,7 @@ target_link_libraries(graph_qt
 )
 
 target_include_directories(graph_qt PUBLIC "..")
+
+set_property(TARGET graph_qt PROPERTY AUTOMOC ON)
 
 add_subdirectory(app)

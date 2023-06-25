@@ -8,6 +8,7 @@
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/graph_widget.h"
+#include "graph_qt/horizontal_scroll_bar_controller.h"
 
 #include <QHBoxLayout>
 #include <QMouseEvent>
@@ -45,58 +46,24 @@ Graph::Graph() {
   horizontal_axis_->setMinimumHeight(kHorizontalAxisHeight);
   bottom_layout->addWidget(horizontal_axis_);
 
+  QObject::connect(horizontal_axis_, &GraphAxis::rangeChanged, this,
+                   [this] { OnHorizontalAxisRangeChanged(); });
+
   horizontal_scroll_bar_ = new QScrollBar{this};
   horizontal_scroll_bar_->setOrientation(Qt::Horizontal);
   horizontal_scroll_bar_->setRange(0, 0);
   horizontal_scroll_bar_->setVisible(false);
   bottom_layout->addWidget(horizontal_scroll_bar_);
 
+  horizontal_scroll_bar_controller_ =
+      std::make_unique<HorizontalScrollBarController>(*horizontal_scroll_bar_,
+                                                      *horizontal_axis_);
+
   setFrameStyle(QFrame::StyledPanel);
-  setStyleSheet("background-color: white;");
 }
 
 Graph::~Graph() {
   DeleteAllPanes();
-}
-
-QRect Graph::GetContentsBounds() const {
-  QRect rect(0, 0, width(), height());
-  rect.adjust(1, 1, 0, 0);
-  return rect;
-}
-
-QRect Graph::GetPanesBounds() const {
-  QRect bounds = GetContentsBounds();
-  bounds.setHeight(std::max(0, bounds.height() - kHorizontalAxisHeight -
-                                   kHorizontalScrollBarHeight - 1));
-  return bounds;
-}
-
-void Graph::resizeEvent(QResizeEvent* e) {
-  QFrame::resizeEvent(e);
-  return;
-
-  splitter_->setGeometry(GetPanesBounds());
-
-  // Calculate location of time axis.
-  auto contents_bounds = GetContentsBounds();
-
-  QRect horz_axis_bounds{
-      contents_bounds.x() - 1,
-      contents_bounds.bottom() - kHorizontalAxisHeight -
-          kHorizontalScrollBarHeight,
-      std::max(0, contents_bounds.width() - kVerticalAxisWidth + 2),
-      kHorizontalAxisHeight};
-
-  horizontal_axis_->setGeometry(horz_axis_bounds);
-
-  horizontal_scroll_bar_->setGeometry(
-      QRect{contents_bounds.x() - 1, horz_axis_bounds.bottom(),
-            contents_bounds.width(), kHorizontalScrollBarHeight});
-
-  OnHorizontalRangeUpdated();
-
-  update();
 }
 
 void Graph::mousePressEvent(QMouseEvent* e) {
@@ -212,18 +179,35 @@ void Graph::AdjustTimeRange() {
   auto range = horizontal_axis_->range();
   AdjustTimeRange(range);
   horizontal_axis_->SetRange(range);
+  horizontal_scroll_bar_controller_->SetScrollRange(GetTotalHorizontalRange());
 }
 
-void Graph::AdjustTimeRange(GraphRange& range) {
+void Graph::AdjustTimeRange(GraphRange& range) const {
   for (const auto* pane : panes_) {
     for (const auto* line : pane->plot().lines())
       line->AdjustTimeRange(range);
   }
 }
 
-void Graph::OnHorizontalRangeUpdated() {
+GraphRange Graph::GetTotalHorizontalRange() const {
+  GraphRange result;
+  for (const auto* pane : panes_) {
+    for (const auto* line : pane->plot().lines()) {
+      auto range = line->GetHorizontalRange();
+      if (!range.empty() && (result.empty() || result.low() > range.low())) {
+        result.low_ = range.low();
+      }
+      if (!range.empty() && (result.empty() || result.high() < range.high())) {
+        result.high_ = range.high();
+      }
+    }
+  }
+  return result;
+}
+
+void Graph::OnHorizontalAxisRangeChanged() {
   UpdateAutoRanges();
-  UpdateHorizontalScrollRange();
+  update();
 }
 
 void Graph::UpdateAutoRanges() {
@@ -306,19 +290,5 @@ void Graph::RequestFocus() {
   else
     View::RequestFocus();
 }*/
-
-void Graph::setHorizontalScrollMin(double value) {
-  if (horizontal_scroll_min_ == value) {
-    return;
-  }
-
-  horizontal_scroll_min_ = value;
-  UpdateHorizontalScrollRange();
-}
-
-void Graph::UpdateHorizontalScrollRange() {
-  auto range = horizontal_axis_->range();
-  // horizontal_scroll_bar_->setRange(min, max);
-}
 
 }  // namespace views

@@ -427,11 +427,9 @@ void GraphAxis::SetRange(const GraphRange& range) {
   if (is_vertical_) {
     // TODO: Don't use pane.
     plot_->update();
-
-  } else {
-    graph_->update();
-    graph_->OnHorizontalRangeUpdated();
   }
+
+  emit rangeChanged(range);
 }
 
 void GraphAxis::InvalidateCursor(const GraphCursor& cursor) {
