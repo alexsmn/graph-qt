@@ -184,9 +184,6 @@ void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
         new_range.Offset(dt);
         graph_->AdjustTimeRange(new_range);
         horizontal_axis_->SetRange(new_range);
-
-        if (graph_->controller())
-          graph_->controller()->OnGraphPannedHorizontally();
       }
       break;
 

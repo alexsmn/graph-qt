@@ -195,11 +195,14 @@ GraphRange Graph::GetTotalHorizontalRange() const {
   for (const auto* pane : panes_) {
     for (const auto* line : pane->plot().lines()) {
       auto range = line->GetHorizontalRange();
-      if (!range.empty() && (result.empty() || result.low() > range.low())) {
-        result.low_ = range.low();
-      }
-      if (!range.empty() && (result.empty() || result.high() < range.high())) {
-        result.high_ = range.high();
+      if (!range.empty()) {
+        assert(range.low() <= range.high());
+        if (result.empty()) {
+          result = range;
+        } else {
+          result.low_ = std::min(result.low_, range.low());
+          result.high_ = std::max(result.high_, range.high());
+        }
       }
     }
   }
@@ -209,6 +212,10 @@ GraphRange Graph::GetTotalHorizontalRange() const {
 void Graph::OnHorizontalAxisRangeChanged() {
   UpdateAutoRanges();
   update();
+
+  if (controller_) {
+    controller_->OnGraphPannedHorizontally();
+  }
 }
 
 void Graph::UpdateAutoRanges() {
