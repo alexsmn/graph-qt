@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 
   graph.horizontal_axis().SetRange({20, 80});
 
-  graph.horizontal_scroll_bar().setVisible(true);
+  graph.SetHorizontalScrollBarVisible(true);
 
   graph.show();
 

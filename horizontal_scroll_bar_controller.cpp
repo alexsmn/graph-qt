@@ -18,6 +18,7 @@ HorizontalScrollBarController::HorizontalScrollBarController(
     QScrollBar& scroll_bar,
     GraphAxis& horizontal_axis)
     : scroll_bar_{scroll_bar}, axis_{horizontal_axis} {
+  scroll_bar_.setVisible(visible_);
   scroll_bar_.setPageStep(kScrollPageStep);
 
   QObject::connect(
@@ -28,6 +29,11 @@ HorizontalScrollBarController::HorizontalScrollBarController(
   QObject::connect(
       &scroll_bar_, &QScrollBar::valueChanged,
       std::bind_front(&HorizontalScrollBarController::OnScroll, this));
+}
+
+void HorizontalScrollBarController::SetVisible(bool visible) {
+  visible_ = visible;
+  scroll_bar_.setVisible(visible);
 }
 
 void HorizontalScrollBarController::SetScrollRange(const GraphRange& range) {

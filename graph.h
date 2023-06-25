@@ -47,10 +47,9 @@ class Graph : public QFrame {
   GraphAxis& horizontal_axis() { return *horizontal_axis_; }
   const GraphAxis& horizontal_axis() const { return *horizontal_axis_; }
 
-  QScrollBar& horizontal_scroll_bar() { return *horizontal_scroll_bar_; }
-  const QScrollBar& horizontal_scroll_bar() const {
-    return *horizontal_scroll_bar_;
-  }
+  bool horizontal_scroll_bar_visible() const;
+  void SetHorizontalScrollBarVisible(bool visible);
+
   void UpdateAutoRanges();
   void Zoom(GraphPane& pane,
             const GraphRange& horizontal_range,
@@ -84,7 +83,7 @@ class Graph : public QFrame {
   QColor selected_cursor_color_{100, 100, 100};
 
   static const int kVerticalAxisWidth = 50;
-  static const int kHorizontalAxisHeight = 20;
+  static const int kHorizontalAxisHeight = 22;
   static const int kHorizontalScrollBarHeight = 20;
 
   // Offsets from graph area.
@@ -130,8 +129,6 @@ class Graph : public QFrame {
   Controller* controller_ = nullptr;
 
   GraphAxis* horizontal_axis_ = nullptr;
-
-  QScrollBar* horizontal_scroll_bar_ = nullptr;
 
   std::unique_ptr<HorizontalScrollBarController>
       horizontal_scroll_bar_controller_;

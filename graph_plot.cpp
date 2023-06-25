@@ -30,7 +30,6 @@ GraphPlot::GraphPlot()
       state_(STATE_IDLE),
       zooming_(false),
       focus_line_(NULL) {
-  setStyleSheet("background-color: white;");
   setMouseTracking(true);
 }
 

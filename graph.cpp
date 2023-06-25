@@ -49,17 +49,18 @@ Graph::Graph() {
   QObject::connect(horizontal_axis_, &GraphAxis::rangeChanged, this,
                    [this] { OnHorizontalAxisRangeChanged(); });
 
-  horizontal_scroll_bar_ = new QScrollBar{this};
-  horizontal_scroll_bar_->setOrientation(Qt::Horizontal);
-  horizontal_scroll_bar_->setRange(0, 0);
-  horizontal_scroll_bar_->setVisible(false);
-  bottom_layout->addWidget(horizontal_scroll_bar_);
+  auto* horizontal_scroll_bar = new QScrollBar{this};
+  horizontal_scroll_bar->setOrientation(Qt::Horizontal);
+  horizontal_scroll_bar->setRange(0, 0);
+  horizontal_scroll_bar->setStyleSheet("background-color: none;");
+  bottom_layout->addWidget(horizontal_scroll_bar);
 
   horizontal_scroll_bar_controller_ =
-      std::make_unique<HorizontalScrollBarController>(*horizontal_scroll_bar_,
+      std::make_unique<HorizontalScrollBarController>(*horizontal_scroll_bar,
                                                       *horizontal_axis_);
 
   setFrameStyle(QFrame::StyledPanel);
+  setStyleSheet("background-color: white;");
 }
 
 Graph::~Graph() {
@@ -290,5 +291,13 @@ void Graph::RequestFocus() {
   else
     View::RequestFocus();
 }*/
+
+bool Graph::horizontal_scroll_bar_visible() const {
+  return horizontal_scroll_bar_controller_->visible();
+}
+
+void Graph::SetHorizontalScrollBarVisible(bool visible) {
+  horizontal_scroll_bar_controller_->SetVisible(visible);
+}
 
 }  // namespace views
