@@ -38,14 +38,14 @@ class TestPointEnumerator : public PointEnumerator {
 class TestDataSource : public GraphDataSource {
  public:
   TestDataSource() {
-    for (int i = 0; i < 100; ++i) {
-      points_.emplace_back(i, i);
+    for (int i = 0; i < kInitialCount; ++i) {
+      points_.emplace_back(kXOffset + i, i);
     }
 
     timer_.setInterval(1s);
 
     QObject::connect(&timer_, &QTimer::timeout, [this] {
-      points_.emplace_back(points_.size(), points_.size());
+      points_.emplace_back(kXOffset + points_.size(), points_.size());
       if (observer_) {
         observer_->OnDataSourceCurrentValueChanged();
         observer_->OnDataSourceHistoryChanged();
@@ -68,6 +68,9 @@ class TestDataSource : public GraphDataSource {
     return {points_.front().x, points_.back().x};
   }
 
+  static const int kInitialCount = 100;
+  static const int kXOffset = 1000;
+
  private:
   std::vector<GraphPoint> points_;
   QTimer timer_;
@@ -86,7 +89,9 @@ int main(int argc, char** argv) {
   line->SetDataSource(new TestDataSource);
   pane->plot().AddLine(*line);
 
-  graph.horizontal_axis().SetRange({20, 80});
+  graph.horizontal_axis().SetRange(
+      {TestDataSource::kXOffset + TestDataSource::kInitialCount / 5,
+       TestDataSource::kXOffset + TestDataSource::kInitialCount * 4 / 5});
 
   graph.SetHorizontalScrollBarVisible(true);
 

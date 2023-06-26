@@ -18,7 +18,12 @@ class HorizontalScrollBarController {
   void SetScrollRange(const GraphRange& range);
 
  private:
-  void OnViewRangeChanged(const GraphRange& view_range);
+  int CalculateScrollRange() const;
+  // The result can be out of range, but Qt will clamp it.
+  int CalculateScrollPos() const;
+  GraphRange CalculateViewRange(int pos) const;
+
+  void OnViewRangeChanged();
   void OnScroll(int pos);
 
   QScrollBar& scroll_bar_;

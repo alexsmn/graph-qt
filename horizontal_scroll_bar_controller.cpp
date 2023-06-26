@@ -12,6 +12,10 @@ namespace {
 // Advance on 10% of the view range on each scroll.
 const int kScrollPageStep = 10;
 
+bool IsZero(double value) {
+  return abs(value) < std::numeric_limits<double>::epsilon();
+}
+
 }  // namespace
 
 HorizontalScrollBarController::HorizontalScrollBarController(
@@ -37,6 +41,10 @@ void HorizontalScrollBarController::SetVisible(bool visible) {
 }
 
 void HorizontalScrollBarController::SetScrollRange(const GraphRange& range) {
+  if (scroll_range_ == range) {
+    return;
+  }
+
   scroll_range_ = range;
 
   base::AutoReset updating{&updating_, true};
@@ -48,9 +56,9 @@ void HorizontalScrollBarController::SetScrollRange(const GraphRange& range) {
   }
 
   scroll_step_ = view_range.delta() / kScrollPageStep;
-  int count = static_cast<int>((scroll_range_.delta() - view_range.delta()) /
-                               scroll_step_);
-  scroll_bar_.setRange(0, count);
+
+  scroll_bar_.setRange(0, CalculateScrollRange());
+  scroll_bar_.setValue(CalculateScrollPos());
 }
 
 void HorizontalScrollBarController::OnScroll(int pos) {
@@ -58,33 +66,60 @@ void HorizontalScrollBarController::OnScroll(int pos) {
     return;
   }
 
-  base::AutoReset updating{&updating_, true};
+  auto view_range = CalculateViewRange(pos);
+  if (view_range.empty()) {
+    return;
+  }
 
-  auto view_range = axis_.range();
-  double min = pos * (scroll_range_.delta() - view_range.delta()) /
-               scroll_bar_.maximum();
-  axis_.SetRange({min, min + view_range.delta()});
+  base::AutoReset updating{&updating_, true};
+  axis_.SetRange(view_range);
 }
 
-void HorizontalScrollBarController::OnViewRangeChanged(
-    const GraphRange& view_range) {
+GraphRange HorizontalScrollBarController::CalculateViewRange(int pos) const {
+  if (scroll_bar_.maximum() == 0) {
+    return {};
+  }
+
+  auto view_range = axis_.range();
+  double min =
+      scroll_range_.low() + pos * (scroll_range_.delta() - view_range.delta()) /
+                                scroll_bar_.maximum();
+  return {min, min + view_range.delta()};
+}
+
+void HorizontalScrollBarController::OnViewRangeChanged() {
   if (updating_) {
     return;
   }
 
   base::AutoReset updating{&updating_, true};
 
-  double scroll_delta = scroll_range_.delta() - view_range.delta();
-  if (abs(scroll_delta) < std::numeric_limits<double>::epsilon()) {
-    return;
+  int pos = CalculateScrollPos();
+  scroll_bar_.setValue(pos);
+}
+
+int HorizontalScrollBarController::CalculateScrollRange() const {
+  const auto& view_range = axis_.range();
+
+  if (IsZero(scroll_step_)) {
+    return 0;
   }
 
-  int pos =
-      static_cast<int>(scroll_bar_.maximum() *
-                       (view_range.low() - scroll_range_.low()) / scroll_delta);
+  return static_cast<int>((scroll_range_.delta() - view_range.delta()) /
+                          scroll_step_);
+}
 
-  // Tolerates `pos` being out of range, as it will be clamped by Qt.
-  scroll_bar_.setValue(pos);
+int HorizontalScrollBarController::CalculateScrollPos() const {
+  const auto& view_range = axis_.range();
+
+  double scroll_delta = scroll_range_.delta() - view_range.delta();
+  if (IsZero(scroll_delta)) {
+    return 0;
+  }
+
+  return static_cast<int>(scroll_bar_.maximum() *
+                          (view_range.low() - scroll_range_.low()) /
+                          scroll_delta);
 }
 
 }  // namespace views
