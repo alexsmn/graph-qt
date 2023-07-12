@@ -177,7 +177,7 @@ void Graph::DeleteCursor(const GraphCursor& cursor) {
   UpdateCurBox();
 }
 
-void Graph::AdjustTimeRange() {
+void Graph::UpdateHorizontalRange() {
   auto range = horizontal_axis_->range();
   AdjustTimeRange(range);
   horizontal_axis_->SetRange(range);
@@ -187,7 +187,7 @@ void Graph::AdjustTimeRange() {
 void Graph::AdjustTimeRange(GraphRange& range) const {
   for (const auto* pane : panes_) {
     for (const auto* line : pane->plot().lines())
-      line->AdjustTimeRange(range);
+      line->AdjustHorizontalRange(range);
   }
 }
 
@@ -223,12 +223,15 @@ void Graph::OnHorizontalAxisRangeChanged() {
   }
 }
 
-void Graph::UpdateAutoRanges() {
+void Graph::UpdateVerticalAutoRanges() {
   for (auto i = panes_.begin(); i != panes_.end(); ++i) {
     GraphPane& pane = **i;
     const GraphPlot::Lines& lines = pane.plot().lines();
-    for (auto i = lines.begin(); i != lines.end(); ++i)
-      (*i)->UpdateAutoRange();
+    for (auto* line : lines) {
+      if (line->auto_range()) {
+        line->UpdateVerticalRange();
+      }
+    }
   }
 }
 

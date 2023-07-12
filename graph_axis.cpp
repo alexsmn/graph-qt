@@ -390,14 +390,14 @@ void GraphAxis::UpdateRange() {
 
   auto i = lines.begin();
   const GraphLine& line = **i;
-  low = line.range().low();
-  high = line.range().high();
-  logical = line.range().kind() == GraphRange::LOGICAL;
+  low = line.vertical_range().low();
+  high = line.vertical_range().high();
+  logical = line.vertical_range().kind() == GraphRange::LOGICAL;
 
   ++i;
   for (; i != lines.end(); ++i) {
     const GraphLine& line = **i;
-    const GraphRange& line_range = line.range();
+    const GraphRange& line_range = line.vertical_range();
 
     logical &= line_range.kind() == GraphRange::LOGICAL;
 

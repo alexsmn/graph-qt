@@ -50,7 +50,7 @@ class Graph : public QFrame {
   bool horizontal_scroll_bar_visible() const;
   void SetHorizontalScrollBarVisible(bool visible);
 
-  void UpdateAutoRanges();
+  void UpdateVerticalAutoRanges();
   void Zoom(GraphPane& pane,
             const GraphRange& horizontal_range,
             const GraphRange& vertical_range);
@@ -97,7 +97,9 @@ class Graph : public QFrame {
 
  protected:
   void AdjustTimeRange(GraphRange& range) const;
-  void AdjustTimeRange();
+
+  // Called by a line when its horizontal range is changed.
+  void UpdateHorizontalRange();
 
   // QWidget
   virtual void mousePressEvent(QMouseEvent* e) override;

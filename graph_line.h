@@ -43,17 +43,16 @@ class GraphLine : protected GraphDataSource::Observer {
   void set_stepped(bool stepped) { set_flag(STEPPED, stepped); }
   void set_smooth(bool smooth) { set_flag(SMOOTH, smooth); }
 
-  const GraphRange& range() const { return range_; }
-  void SetRange(const GraphRange& range);
+  const GraphRange& vertical_range() const { return vertical_range_; }
+  void SetVerticalRange(const GraphRange& range);
 
   GraphRange GetHorizontalRange() const;
 
   double current_value() const { return current_value_; }
 
-  void UpdateAutoRange();
-  // Shrinks the time range by moving the `low_` bound, so the graph can display
-  // all points.
-  void AdjustTimeRange(GraphRange& range) const;
+  // Shrinks the horizontal range by advancing the `low_` bound, so only the
+  // `kMaxPoints` amount of points is displayed.
+  void AdjustHorizontalRange(GraphRange& range) const;
 
   double XToValue(int x) const;
   double YToValue(int y) const;
@@ -86,9 +85,11 @@ class GraphLine : protected GraphDataSource::Observer {
     SMOOTH = 0x0008,
   };
 
-  void UpdateRange();
-  GraphRange CalculateAutoRange();
-  void SetRangeHelper(const GraphRange& range);
+  void UpdateHorizontalRange();
+
+  void UpdateVerticalRange();
+  GraphRange CalculateVerticalAutoRange();
+  void SetVerticalRangeHelper(const GraphRange& range);
 
   void set_flag(int flag, bool set) {
     if (set)
@@ -103,8 +104,7 @@ class GraphLine : protected GraphDataSource::Observer {
 
   GraphDataSource* data_source_ = nullptr;
 
-  // Available range.
-  GraphRange range_;
+  GraphRange vertical_range_;
 
   double current_value_ = kGraphUnknownValue;
 

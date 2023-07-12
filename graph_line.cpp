@@ -48,7 +48,8 @@ void GraphLine::SetDataSource(GraphDataSource* data_source) {
   SetCurrentValue(data_source_ ? data_source_->GetCurrentValue()
                                : kGraphUnknownValue);
 
-  UpdateRange();
+  UpdateHorizontalRange();
+  UpdateVerticalRange();
 
   // Values changed, need to invalidate.
   if (plot_)
@@ -169,7 +170,7 @@ int GraphLine::ValueToY(double value) const {
   return plot().vertical_axis().ConvertValueToScreen(value);
 }
 
-GraphRange GraphLine::CalculateAutoRange() {
+GraphRange GraphLine::CalculateVerticalAutoRange() {
   assert(auto_range());
 
   if (!plot_ || !data_source_)
@@ -216,20 +217,12 @@ bool GraphLine::GetNearestPoint(const QPoint& screen_point,
   return min_distance <= max_distance;
 }
 
-void GraphLine::SetRange(const GraphRange& range) {
+void GraphLine::SetVerticalRange(const GraphRange& range) {
   set_auto_range(false);
-  SetRangeHelper(range);
+  SetVerticalRangeHelper(range);
 }
 
-void GraphLine::UpdateAutoRange() {
-  if (!auto_range())
-    return;
-
-  GraphRange range = CalculateAutoRange();
-  SetRangeHelper(range);
-}
-
-void GraphLine::AdjustTimeRange(GraphRange& range) const {
+void GraphLine::AdjustHorizontalRange(GraphRange& range) const {
   const auto* points =
       data_source_->EnumPoints(range.low(), range.high(), false, false);
   if (!points || points->GetCount() <= kMaxPoints)
@@ -258,32 +251,33 @@ void GraphLine::AdjustTimeRange(GraphRange& range) const {
   }
 }
 
-void GraphLine::SetRangeHelper(const GraphRange& range) {
-  if (range_ == range)
+void GraphLine::SetVerticalRangeHelper(const GraphRange& range) {
+  if (vertical_range_ == range)
     return;
 
-  range_ = range;
+  vertical_range_ = range;
 
-  if (plot_)
+  if (plot_) {
     plot_->vertical_axis().UpdateRange();
+  }
 }
 
 void GraphLine::OnDataSourceItemChanged() {
-  UpdateRange();
+  UpdateHorizontalRange();
+  UpdateVerticalRange();
 
+  // Values changed, need to invalidate.
   if (plot_) {
-    plot_->graph().AdjustTimeRange();
     plot_->update();
   }
 }
 
 void GraphLine::OnDataSourceHistoryChanged() {
-  UpdateRange();
+  UpdateHorizontalRange();
+  UpdateVerticalRange();
 
+  // Values changed, need to invalidate.
   if (plot_) {
-    plot_->graph().AdjustTimeRange();
-
-    // Values changed, need to invalidate.
     plot_->update();
   }
 }
@@ -292,11 +286,25 @@ void GraphLine::OnDataSourceCurrentValueChanged() {
   SetCurrentValue(data_source_->GetCurrentValue());
 }
 
-void GraphLine::UpdateRange() {
-  if (auto_range())
-    UpdateAutoRange();
-  else
-    SetRange(data_source_ ? data_source_->GetVerticalRange() : GraphRange{});
+void GraphLine::UpdateHorizontalRange() {
+  if (!plot_ || !data_source_) {
+    return;
+  }
+
+  auto range = data_source_->GetHorizontalRange();
+  if (plot_->graph().horizontal_axis().panning_range_max() < range.high())
+    plot_->graph().horizontal_axis().SetPanningRangeMax(range.high());
+
+  plot_->graph().Fit();
+
+  plot_->graph().UpdateHorizontalRange();
+  plot_->update();
+}
+
+void GraphLine::UpdateVerticalRange() {
+  SetVerticalRangeHelper(auto_range()   ? CalculateVerticalAutoRange()
+                         : data_source_ ? data_source_->GetVerticalRange()
+                                        : GraphRange{});
 }
 
 void GraphLine::SetColor(QColor color) {
