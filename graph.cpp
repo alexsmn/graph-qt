@@ -150,8 +150,9 @@ void Graph::MoveCursor(const GraphCursor& cursor, double position) {
   const_cast<GraphCursor&>(cursor).position_ = position;
   InvalidateCursor(cursor);
 
-  if (selected_cursor_ == &cursor)
-    UpdateCurBox();
+  if (controller_ && selected_cursor_ == &cursor) {
+    controller_->OnSelectedCursorChanged();
+  }
 }
 
 void Graph::SelectCursor(const GraphCursor* cursor) {
@@ -160,10 +161,13 @@ void Graph::SelectCursor(const GraphCursor* cursor) {
 
   selected_cursor_ = const_cast<GraphCursor*>(cursor);
 
-  if (selected_cursor_)
+  if (selected_cursor_) {
     InvalidateCursor(*selected_cursor_);
+  }
 
-  UpdateCurBox();
+  if (controller_) {
+    controller_->OnSelectedCursorChanged();
+  }
 }
 
 void Graph::DeleteCursor(const GraphCursor& cursor) {
@@ -174,7 +178,9 @@ void Graph::DeleteCursor(const GraphCursor& cursor) {
 
   cursor.axis_->DeleteCursor(cursor);
 
-  UpdateCurBox();
+  if (controller_) {
+    controller_->OnSelectedCursorChanged();
+  }
 }
 
 void Graph::UpdateHorizontalRange() {
@@ -211,7 +217,7 @@ GraphRange Graph::GetTotalHorizontalRange() const {
 }
 
 void Graph::OnHorizontalAxisRangeChanged() {
-  UpdateAutoRanges();
+  UpdateVerticalAutoRanges();
   update();
 
   if (!time_fit_updating_) {

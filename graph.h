@@ -31,6 +31,7 @@ class Graph : public QFrame {
     virtual void OnGraphSelectPane() {}
     virtual void OnGraphPannedHorizontally() {}
     virtual void OnLineItemChanged(GraphLine& line) {}
+    virtual void OnSelectedCursorChanged() {}
   };
 
   Graph();
@@ -68,7 +69,6 @@ class Graph : public QFrame {
   void SelectCursor(const GraphCursor* cursor);
   void DeleteCursor(const GraphCursor& cursor);
 
-  virtual void UpdateCurBox() {}
   virtual QString GetCursorLabel(const GraphCursor& cursor) const;
 
   // Get horizontal label string. Shall be called only in scope of DrawYAxis().
