@@ -78,6 +78,11 @@ class Graph : public QFrame {
   /*virtual bool IsFocusable() const { return true; }
   virtual void RequestFocus();*/
 
+  // Time fit.
+  bool time_fit() const { return time_fit_; }
+  void SetTimeFit(bool time_fit);
+  void Fit();
+
   int vertical_cursor_label_width_ = 70;
   QPen grid_pen_{QColor(237, 237, 237)};
   QColor selected_cursor_color_{100, 100, 100};
@@ -132,6 +137,9 @@ class Graph : public QFrame {
 
   std::unique_ptr<HorizontalScrollBarController>
       horizontal_scroll_bar_controller_;
+
+  bool time_fit_ = true;
+  bool time_fit_updating_ = false;
 
   // TODO: Remove friends.
   friend class GraphAxis;

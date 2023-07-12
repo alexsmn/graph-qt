@@ -51,6 +51,8 @@ class GraphLine : protected GraphDataSource::Observer {
   double current_value() const { return current_value_; }
 
   void UpdateAutoRange();
+  // Shrinks the time range by moving the `low_` bound, so the graph can display
+  // all points.
   void AdjustTimeRange(GraphRange& range) const;
 
   double XToValue(int x) const;
