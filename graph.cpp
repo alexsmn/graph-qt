@@ -24,7 +24,7 @@ namespace views {
 
 // Graph
 
-Graph::Graph() {
+Graph::Graph(QWidget* parent) : QFrame{parent} {
   setLayout(new QVBoxLayout{this});
   layout()->setMargin(0);
   layout()->setSpacing(0);

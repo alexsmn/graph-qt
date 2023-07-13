@@ -10,7 +10,7 @@ struct GraphPoint;
 
 class PointEnumerator {
  public:
-  virtual ~PointEnumerator() {}
+  virtual ~PointEnumerator() = default;
 
   virtual size_t GetCount() const = 0;
 

@@ -34,7 +34,7 @@ class Graph : public QFrame {
     virtual void OnSelectedCursorChanged() {}
   };
 
-  Graph();
+  explicit Graph(QWidget* parent = nullptr);
   virtual ~Graph();
 
   Controller* controller() const { return controller_; }
