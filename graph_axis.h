@@ -19,8 +19,9 @@ class GraphAxis : public QWidget {
 
   void Init(Graph* graph, GraphPlot* plot, bool is_vertical);
 
-  // |plot()| is NULL for horizontal axis.
+  // The plot is null for horizontal axis.
   GraphPlot* plot() const { return plot_; }
+
   bool is_vertical() const { return is_vertical_; }
 
   // Ranges.
@@ -32,9 +33,6 @@ class GraphAxis : public QWidget {
   bool time_fit() const { return time_fit_; }
   void SetTimeFit(bool time_fit);
   void Fit();
-
-  double panning_range_min() const { return panning_range_min_; }
-  void SetPanningRangeMin(double value) { panning_range_min_ = value; }
 
   double panning_range_max() const { return panning_range_max_; }
   void SetPanningRangeMax(double value) { panning_range_max_ = value; }
@@ -100,7 +98,6 @@ class GraphAxis : public QWidget {
 
   QRect draw_rc;
 
-  double panning_range_min_ = std::numeric_limits<double>::min();
   double panning_range_max_ = std::numeric_limits<double>::max();
 
   bool ignore_context_menu_ = false;

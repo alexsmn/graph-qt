@@ -41,7 +41,10 @@ class GraphDataSource {
 
   virtual QString GetYAxisLabel(double value) const;
 
+  // Must be O(1).
   virtual GraphRange GetHorizontalRange() const { return GraphRange{}; }
+
+  // Must be O(1).
   virtual GraphRange GetVerticalRange() const { return GraphRange{}; }
 
   GraphRange CalculateAutoRange(double x1, double x2);
