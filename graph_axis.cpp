@@ -66,6 +66,9 @@ GraphAxis::GraphAxis(QWidget* parent) : QWidget{parent} {
 GraphAxis::~GraphAxis() = default;
 
 void GraphAxis::Init(Graph* graph, GraphPlot* plot, bool is_vertical) {
+  // The `plot` is null for the horizontal axis.
+  assert(graph);
+
   graph_ = graph;
   plot_ = plot;
   is_vertical_ = is_vertical;
@@ -113,15 +116,14 @@ void GraphAxis::paintEvent(QPaintEvent* e) {
   }
 
   if (is_vertical_) {
-    const GraphPlot::Lines& lines = plot_->lines();
-    for (GraphPlot::Lines::const_iterator i = lines.begin(); i != lines.end();
-         ++i) {
-      PaintCurrentValue(painter, **i);
+    for (const auto* line : plot_->lines()) {
+      PaintCurrentValue(painter, *line);
     }
   }
 
-  for (Cursors::iterator i = cursors_.begin(); i != cursors_.end(); ++i)
-    PaintCursorLabel(painter, *i);
+  for (const auto& cursor : cursors_) {
+    PaintCursorLabel(painter, cursor);
+  }
 }
 
 void GraphAxis::PaintTick(QPainter& painter, int pos) {
@@ -442,7 +444,7 @@ void GraphAxis::InvalidateCursor(const GraphCursor& cursor) {
 }
 
 void GraphAxis::Fit() {
-  if (!plot_) {
+  if (!graph_) {
     return;
   }
 
@@ -454,7 +456,7 @@ void GraphAxis::Fit() {
                               range.kind()};
   }
 
-  plot_->graph().AdjustTimeRange(range);
+  graph_->AdjustTimeRange(range);
 
   base::AutoReset updating{&time_fit_updating_, true};
   SetRange(range);

@@ -84,6 +84,7 @@ class GraphAxis : public QWidget {
   void CalcDrawRect();
 
   Graph* graph_ = nullptr;
+  // The `plot` is null for the horizontal axis.
   GraphPlot* plot_ = nullptr;
   bool is_vertical_ = false;
 
@@ -103,7 +104,6 @@ class GraphAxis : public QWidget {
   double panning_range_max_ = std::numeric_limits<double>::max();
 
   bool ignore_context_menu_ = false;
-
 
   bool time_fit_ = true;
   bool time_fit_updating_ = false;
