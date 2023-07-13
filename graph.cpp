@@ -225,10 +225,8 @@ void Graph::OnHorizontalAxisRangeChanged() {
 }
 
 void Graph::UpdateVerticalAutoRanges() {
-  for (auto i = panes_.begin(); i != panes_.end(); ++i) {
-    GraphPane& pane = **i;
-    const GraphPlot::Lines& lines = pane.plot().lines();
-    for (auto* line : lines) {
+  for (const auto* pane : panes_) {
+    for (auto* line : pane->plot().lines()) {
       if (line->auto_range()) {
         line->UpdateVerticalRange();
       }
@@ -250,6 +248,12 @@ QString Graph::GetCursorLabel(const GraphCursor& cursor) const {
 
 QString Graph::GetXAxisLabel(double val) const {
   return QString::number(val);
+}
+
+GraphPane* Graph::AddPane() {
+  auto* pane = new GraphPane{this};
+  AddPane(*pane);
+  return pane;
 }
 
 void Graph::AddPane(GraphPane& pane) {

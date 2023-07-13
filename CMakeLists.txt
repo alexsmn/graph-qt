@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.26)
 
+project(graph_qt)
+
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 file(GLOB SOURCES CONFIGURE_DEPENDS
@@ -7,7 +9,13 @@ file(GLOB SOURCES CONFIGURE_DEPENDS
   "*.h"
   "model/*.cpp"
   "model/*.h"
+  "test/*.cpp"
+  "test/*.h"
 )
+
+set(SOURCES_UT ${SOURCES})
+list(FILTER SOURCES EXCLUDE REGEX  "unittest")
+list(FILTER SOURCES_UT INCLUDE REGEX "unittest")
 
 add_library(graph_qt STATIC ${SOURCES})
 
@@ -21,5 +29,14 @@ target_link_libraries(graph_qt
 target_include_directories(graph_qt PUBLIC "..")
 
 set_property(TARGET graph_qt PROPERTY AUTOMOC ON)
+
+# UTs
+
+find_package(GTest REQUIRED)
+
+add_executable(graph_qt_unittests ${SOURCES_UT})
+target_link_libraries(graph_qt_unittests PRIVATE GTest::gmock graph_qt)
+include(GoogleTest)
+gtest_discover_tests(graph_qt_unittests)
 
 add_subdirectory(app)

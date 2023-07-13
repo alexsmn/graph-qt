@@ -11,6 +11,7 @@ namespace views {
 class Graph;
 class GraphAxis;
 class GraphCursor;
+class GraphDataSource;
 class GraphLine;
 class GraphPane;
 class GraphWidget;
@@ -39,17 +40,20 @@ class GraphPlot : public QWidget {
     assert(horizontal_axis_);
     return *horizontal_axis_;
   }
+
   GraphAxis& vertical_axis() {
     assert(vertical_axis_);
     return *vertical_axis_;
   }
 
   // Lines.
-  typedef std::list<GraphLine*> Lines;
+  using Lines = std::list<GraphLine*>;
   const Lines& lines() const { return lines_; }
   GraphLine* primary_line() const {
-    return lines_.empty() ? NULL : lines_.front();
+    return lines_.empty() ? nullptr : lines_.front();
   }
+  GraphLine* AddLine();
+  GraphLine* AddLine(GraphDataSource& data_source);
   void AddLine(GraphLine& line);
   void DeleteLine(GraphLine& line);
   void DeleteAllLines();
@@ -59,7 +63,7 @@ class GraphPlot : public QWidget {
   void set_zooming(bool zooming) { zooming_ = zooming; }
 
   // Cursors.
-  typedef std::vector<GraphCursor> Cursors;
+  using Cursors = std::vector<GraphCursor>;
   void InvalidateCursor(const GraphCursor& cursor);
 
   // Focusing.
@@ -67,7 +71,7 @@ class GraphPlot : public QWidget {
   void InvalidateFocusPoint();
 
   // Widgets.
-  typedef std::list<GraphWidget*> Widgets;
+  using Widgets = std::list<GraphWidget*>;
   const Widgets& widgets() const { return widgets_; }
   void AddWidget(GraphWidget& widget);
   void RemoveWidget(GraphWidget& widget);

@@ -1,19 +1,14 @@
 #include "graph_qt/graph_pane.h"
+
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_axis.h"
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_plot.h"
 
-#undef min
-#undef max
-
 namespace views {
 
-GraphPane::GraphPane()
-    : graph_(NULL),
-      size_percent_(100),
-      vertical_axis_(new GraphAxis()),
-      plot_(new GraphPlot()) {
+GraphPane::GraphPane(QWidget* parent)
+    : QWidget{parent}, vertical_axis_(new GraphAxis()), plot_(new GraphPlot()) {
   setFocusPolicy(Qt::ClickFocus);
 }
 

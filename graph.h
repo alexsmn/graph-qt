@@ -51,12 +51,12 @@ class Graph : public QFrame {
   bool horizontal_scroll_bar_visible() const;
   void SetHorizontalScrollBarVisible(bool visible);
 
-  void UpdateVerticalAutoRanges();
   void Zoom(GraphPane& pane,
             const GraphRange& horizontal_range,
             const GraphRange& vertical_range);
 
   // Panes.
+  GraphPane* AddPane();
   void AddPane(GraphPane& pane);
   void DeletePane(GraphPane& pane);
   void DeleteAllPanes();
@@ -115,6 +115,8 @@ class Graph : public QFrame {
 
   void OnHorizontalAxisRangeChanged();
   GraphRange GetTotalHorizontalRange() const;
+
+  void UpdateVerticalAutoRanges();
 
   // FocusChangeListener
   // virtual void OnFocusChanged(View* focused_before, View* focused_now);

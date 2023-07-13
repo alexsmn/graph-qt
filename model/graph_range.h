@@ -2,10 +2,11 @@
 
 #include <cassert>
 #include <limits>
+#include <ostream>
 
 namespace views {
 
-const double kGraphUnknownValue = FLT_MIN;
+const double kGraphUnknownValue = std::numeric_limits<double>::min();
 
 class GraphRange {
  public:
@@ -52,5 +53,26 @@ class GraphRange {
   double high_ = kGraphUnknownValue;
   Kind kind_ = LINEAR;
 };
+
+namespace detail {
+
+inline void PrintBound(std::ostream& os, double bound) {
+  if (bound == kGraphUnknownValue)
+    os << "unknown";
+  else
+    os << bound;
+}
+
+}  // namespace detail
+
+inline std::ostream& operator<<(std::ostream& os, const GraphRange& range) {
+  os << "{low=";
+  detail::PrintBound(os, range.low());
+  os << ", high=";
+  detail::PrintBound(os, range.high());
+  os << ", delta=" << range.delta()
+     << ", kind=" << static_cast<int>(range.kind()) << "}";
+  return os;
+}
 
 }  // namespace views

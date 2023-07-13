@@ -23,13 +23,13 @@ namespace views {
 static const int kCursorWidth = 2;
 
 GraphPlot::GraphPlot()
-    : graph_(NULL),
-      pane_(NULL),
-      horizontal_axis_(NULL),
-      vertical_axis_(NULL),
+    : graph_(nullptr),
+      pane_(nullptr),
+      horizontal_axis_(nullptr),
+      vertical_axis_(nullptr),
       state_(STATE_IDLE),
       zooming_(false),
-      focus_line_(NULL) {
+      focus_line_(nullptr) {
   setMouseTracking(true);
 }
 
@@ -47,6 +47,18 @@ void GraphPlot::Init(Graph* graph,
   vertical_axis_ = vertical_axis;
 }
 
+GraphLine* GraphPlot::AddLine() {
+  auto* line = new GraphLine;
+  AddLine(*line);
+  return line;
+}
+
+GraphLine* GraphPlot::AddLine(GraphDataSource& data_source) {
+  auto* line = AddLine();
+  line->SetDataSource(&data_source);
+  return line;
+}
+
 void GraphPlot::AddLine(GraphLine& line) {
   assert(!line.plot_);
 
@@ -59,7 +71,7 @@ void GraphPlot::AddLine(GraphLine& line) {
 
 void GraphPlot::DeleteLine(GraphLine& line) {
   if (&line == focus_line_)
-    SetFocusPoint(GraphPoint(), NULL);
+    SetFocusPoint(GraphPoint(), nullptr);
 
   // Delete from list.
   Lines::iterator i = std::find(lines_.begin(), lines_.end(), &line);
@@ -206,7 +218,7 @@ void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
         }
       }
       if (clear_focus)
-        SetFocusPoint(GraphPoint(), NULL);
+        SetFocusPoint(GraphPoint(), nullptr);
       return;
     }
   }
@@ -239,7 +251,7 @@ void GraphPlot::mouseReleaseEvent(QMouseEvent* e) {
 }
 
 void GraphPlot::leaveEvent(QEvent* e) {
-  SetFocusPoint(GraphPoint(), NULL);
+  SetFocusPoint(GraphPoint(), nullptr);
 
   QWidget::leaveEvent(e);
 }

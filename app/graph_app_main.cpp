@@ -1,10 +1,10 @@
-#include "graph_qt/app/test_data_source.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_axis.h"
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/graph_widget.h"
+#include "graph_qt/test/test_data_source.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -18,6 +18,8 @@ using namespace std::chrono_literals;
 int main(int argc, char** argv) {
   QApplication app{argc, argv};
 
+  UpdatingTestDataSource data_source{1s};
+
   QMainWindow main_window;
   auto* toolbar = main_window.addToolBar("ToolBar");
 
@@ -26,9 +28,7 @@ int main(int argc, char** argv) {
   auto* pane = new GraphPane{};
   graph->AddPane(*pane);
 
-  auto* line = new GraphLine{};
-  line->SetDataSource(new TestDataSource);
-  pane->plot().AddLine(*line);
+  pane->plot().AddLine(data_source);
 
   graph->horizontal_axis().SetRange(
       {TestDataSource::kXOffset + TestDataSource::kInitialCount / 5,

@@ -30,7 +30,7 @@ GraphLine::GraphLine() = default;
 
 GraphLine::~GraphLine() {
   if (data_source_)
-    data_source_->SetObserver(this);
+    data_source_->SetObserver(nullptr);
 }
 
 void GraphLine::SetDataSource(GraphDataSource* data_source) {

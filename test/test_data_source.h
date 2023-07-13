@@ -33,18 +33,15 @@ class TestDataSource : public views::GraphDataSource {
     for (int i = 0; i < kInitialCount; ++i) {
       points_.emplace_back(kXOffset + i, i);
     }
+  }
 
-    timer_.setInterval(std::chrono::seconds{1});
+  void AddPoint() {
+    points_.emplace_back(kXOffset + points_.size(), points_.size());
 
-    QObject::connect(&timer_, &QTimer::timeout, [this] {
-      points_.emplace_back(kXOffset + points_.size(), points_.size());
-      if (observer_) {
-        observer_->OnDataSourceCurrentValueChanged();
-        observer_->OnDataSourceHistoryChanged();
-      }
-    });
-
-    timer_.start();
+    if (observer_) {
+      observer_->OnDataSourceCurrentValueChanged();
+      observer_->OnDataSourceHistoryChanged();
+    }
   }
 
   virtual double GetCurrentValue() const override { return points_.back().y; }
@@ -64,7 +61,20 @@ class TestDataSource : public views::GraphDataSource {
   static const int kInitialCount = 100;
   static const int kXOffset = 1000;
 
- private:
+ protected:
   std::vector<views::GraphPoint> points_;
+};
+
+class UpdatingTestDataSource : public TestDataSource {
+ public:
+  explicit UpdatingTestDataSource(std::chrono::milliseconds update_period) {
+    timer_.setInterval(update_period);
+
+    QObject::connect(&timer_, &QTimer::timeout, [this] { AddPoint(); });
+
+    timer_.start();
+  }
+
+ private:
   QTimer timer_;
 };
