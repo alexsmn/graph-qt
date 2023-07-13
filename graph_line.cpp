@@ -292,13 +292,8 @@ void GraphLine::UpdateHorizontalRange() {
   }
 
   auto range = data_source_->GetHorizontalRange();
-  if (plot_->graph().horizontal_axis().panning_range_max() < range.high())
-    plot_->graph().horizontal_axis().SetPanningRangeMax(range.high());
-
-  plot_->graph().horizontal_axis().Fit();
-
-  plot_->graph().UpdateHorizontalRange();
-  plot_->update();
+  plot_->graph().horizontal_axis().SetScrollRange(
+      plot_->graph().horizontal_axis().scroll_range().combine(range));
 }
 
 void GraphLine::UpdateVerticalRange() {

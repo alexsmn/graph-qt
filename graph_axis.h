@@ -34,8 +34,8 @@ class GraphAxis : public QWidget {
   void SetTimeFit(bool time_fit);
   void Fit();
 
-  double panning_range_max() const { return panning_range_max_; }
-  void SetPanningRangeMax(double value) { panning_range_max_ = value; }
+  const GraphRange& scroll_range() const { return scroll_range_; }
+  void SetScrollRange(const GraphRange& range);
 
   // Conversion.
   double ConvertScreenToValue(int pos) const;
@@ -60,6 +60,7 @@ class GraphAxis : public QWidget {
 
  signals:
   void rangeChanged(const GraphRange& range);
+  void scrollRangeChanged(const GraphRange& range);
 
  private:
   friend class GraphLine;
@@ -87,6 +88,7 @@ class GraphAxis : public QWidget {
   bool is_vertical_ = false;
 
   GraphRange range_;
+  GraphRange scroll_range_;
 
   double tick_step_ = 0.0;
 

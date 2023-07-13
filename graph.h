@@ -93,9 +93,6 @@ class Graph : public QFrame {
  protected:
   void AdjustTimeRange(GraphRange& range) const;
 
-  // Called by a line when its horizontal range is changed.
-  void UpdateHorizontalRange();
-
   // QWidget
   virtual void mousePressEvent(QMouseEvent* e) override;
 

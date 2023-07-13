@@ -185,11 +185,11 @@ void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
     case STATE_PANNING:
       if (delta.x()) {
         const GraphRange& range = horizontal_axis_->range();
-        auto panning_range_max = horizontal_axis_->panning_range_max();
+        auto scroll_range_high = horizontal_axis_->scroll_range().high();
         double dt = -delta.x() * range.delta() / width();
-        if (panning_range_max != std::numeric_limits<double>::max() &&
-            range.high() + dt > panning_range_max) {
-          dt = panning_range_max - range.high();
+        if (scroll_range_high != std::numeric_limits<double>::max() &&
+            range.high() + dt > scroll_range_high) {
+          dt = scroll_range_high - range.high();
         }
 
         GraphRange new_range = range;

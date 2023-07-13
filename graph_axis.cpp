@@ -450,10 +450,8 @@ void GraphAxis::Fit() {
 
   auto range = this->range();
 
-  auto time_max_limit = panning_range_max();
-  if (time_fit_ && time_max_limit != std::numeric_limits<double>::max()) {
-    range = views::GraphRange{time_max_limit - range.delta(), time_max_limit,
-                              range.kind()};
+  if (time_fit_ && !scroll_range_.empty()) {
+    range = scroll_range_.high_subrange(range.delta());
   }
 
   graph_->AdjustTimeRange(range);
@@ -472,6 +470,20 @@ void GraphAxis::SetTimeFit(bool time_fit) {
   if (time_fit_) {
     Fit();
   }
+}
+
+void GraphAxis::SetScrollRange(const GraphRange& range) {
+  if (range == scroll_range_) {
+    return;
+  }
+
+  scroll_range_ = range;
+
+  if (time_fit_) {
+    Fit();
+  }
+
+  emit scrollRangeChanged(range);
 }
 
 }  // namespace views

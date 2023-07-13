@@ -33,6 +33,22 @@ class GraphRange {
   Kind kind() const { return kind_; }
   void set_time() { kind_ = TIME; }
 
+  GraphRange high_subrange(double delta) const {
+    return empty() ? *this : GraphRange{high_ - delta, high_, kind_};
+  }
+
+  GraphRange combine(const GraphRange& other) const {
+    assert(kind_ == other.kind_);
+    if (other.empty()) {
+      return *this;
+    }
+    if (empty()) {
+      return other;
+    }
+    return GraphRange{std::min(low_, other.low_), std::max(high_, other.high_),
+                      kind_};
+  }
+
   bool Contains(double value) const {
     assert(low_ <= high_);
     return (value >= low_) && (value <= high_);

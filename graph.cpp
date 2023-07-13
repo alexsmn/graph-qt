@@ -48,6 +48,11 @@ Graph::Graph(QWidget* parent) : QFrame{parent} {
 
   QObject::connect(horizontal_axis_, &GraphAxis::rangeChanged, this,
                    [this] { OnHorizontalAxisRangeChanged(); });
+  QObject::connect(horizontal_axis_, &GraphAxis::scrollRangeChanged, this,
+                   [this] {
+                     horizontal_scroll_bar_controller_->SetScrollRange(
+                         horizontal_axis_->scroll_range());
+                   });
 
   auto* horizontal_scroll_bar = new QScrollBar{this};
   horizontal_scroll_bar->setOrientation(Qt::Horizontal);
@@ -180,13 +185,6 @@ void Graph::DeleteCursor(const GraphCursor& cursor) {
   if (controller_) {
     controller_->OnSelectedCursorChanged();
   }
-}
-
-void Graph::UpdateHorizontalRange() {
-  auto range = horizontal_axis_->range();
-  AdjustTimeRange(range);
-  horizontal_axis_->SetRange(range);
-  horizontal_scroll_bar_controller_->SetScrollRange(GetTotalHorizontalRange());
 }
 
 void Graph::AdjustTimeRange(GraphRange& range) const {
