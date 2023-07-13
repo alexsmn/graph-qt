@@ -1,5 +1,6 @@
 #include "graph_qt/graph_axis.h"
 
+#include "base/auto_reset.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"
@@ -429,11 +430,46 @@ void GraphAxis::SetRange(const GraphRange& range) {
     plot_->update();
   }
 
+  if (!time_fit_updating_) {
+    time_fit_ = false;
+  }
+
   emit rangeChanged(range);
 }
 
 void GraphAxis::InvalidateCursor(const GraphCursor& cursor) {
   update(GetCursorLabelRect(cursor));
+}
+
+void GraphAxis::Fit() {
+  if (!plot_) {
+    return;
+  }
+
+  auto range = this->range();
+
+  auto time_max_limit = panning_range_max();
+  if (time_fit_ && time_max_limit != std::numeric_limits<double>::max()) {
+    range = views::GraphRange{time_max_limit - range.delta(), time_max_limit,
+                              range.kind()};
+  }
+
+  plot_->graph().AdjustTimeRange(range);
+
+  base::AutoReset updating{&time_fit_updating_, true};
+  SetRange(range);
+}
+
+void GraphAxis::SetTimeFit(bool time_fit) {
+  if (time_fit_ == time_fit) {
+    return;
+  }
+
+  time_fit_ = time_fit;
+
+  if (time_fit_) {
+    Fit();
+  }
 }
 
 }  // namespace views

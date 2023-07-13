@@ -295,7 +295,7 @@ void GraphLine::UpdateHorizontalRange() {
   if (plot_->graph().horizontal_axis().panning_range_max() < range.high())
     plot_->graph().horizontal_axis().SetPanningRangeMax(range.high());
 
-  plot_->graph().Fit();
+  plot_->graph().horizontal_axis().Fit();
 
   plot_->graph().UpdateHorizontalRange();
   plot_->update();

@@ -38,9 +38,10 @@ int main(int argc, char** argv) {
 
   auto* fit_action = toolbar->addAction("Fit");
   fit_action->setCheckable(true);
-  fit_action->setChecked(graph->time_fit());
-  QObject::connect(fit_action, &QAction::toggled,
-                   [graph](bool on) { graph->SetTimeFit(on); });
+  fit_action->setChecked(graph->horizontal_axis().time_fit());
+  QObject::connect(fit_action, &QAction::toggled, [graph](bool on) {
+    graph->horizontal_axis().SetTimeFit(on);
+  });
 
   main_window.setCentralWidget(graph);
   main_window.setMinimumSize({1200, 800});

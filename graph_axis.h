@@ -28,6 +28,11 @@ class GraphAxis : public QWidget {
   void SetRange(const GraphRange& range);
   void UpdateRange();
 
+  // Time fit.
+  bool time_fit() const { return time_fit_; }
+  void SetTimeFit(bool time_fit);
+  void Fit();
+
   double panning_range_min() const { return panning_range_min_; }
   void SetPanningRangeMin(double value) { panning_range_min_ = value; }
 
@@ -98,6 +103,10 @@ class GraphAxis : public QWidget {
   double panning_range_max_ = std::numeric_limits<double>::max();
 
   bool ignore_context_menu_ = false;
+
+
+  bool time_fit_ = true;
+  bool time_fit_updating_ = false;
 };
 
 }  // namespace views

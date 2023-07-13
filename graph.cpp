@@ -1,6 +1,5 @@
 #include "graph_qt/graph.h"
 
-#include "base/auto_reset.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
@@ -220,10 +219,6 @@ void Graph::OnHorizontalAxisRangeChanged() {
   UpdateVerticalAutoRanges();
   update();
 
-  if (!time_fit_updating_) {
-    time_fit_ = false;
-  }
-
   if (controller_) {
     controller_->OnGraphPannedHorizontally();
   }
@@ -319,33 +314,6 @@ bool Graph::horizontal_scroll_bar_visible() const {
 
 void Graph::SetHorizontalScrollBarVisible(bool visible) {
   horizontal_scroll_bar_controller_->SetVisible(visible);
-}
-
-void Graph::Fit() {
-  auto range = horizontal_axis().range();
-
-  auto time_max_limit = horizontal_axis().panning_range_max();
-  if (time_fit_ && time_max_limit != std::numeric_limits<double>::max()) {
-    range = views::GraphRange{time_max_limit - range.delta(), time_max_limit,
-                              range.kind()};
-  }
-
-  AdjustTimeRange(range);
-
-  base::AutoReset updating{&time_fit_updating_, true};
-  horizontal_axis().SetRange(range);
-}
-
-void Graph::SetTimeFit(bool time_fit) {
-  if (time_fit_ == time_fit) {
-    return;
-  }
-
-  time_fit_ = time_fit;
-
-  if (time_fit_) {
-    Fit();
-  }
 }
 
 }  // namespace views
