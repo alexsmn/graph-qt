@@ -84,7 +84,7 @@ GraphRange HorizontalScrollBarController::CalculateViewRange(int pos) const {
   double min =
       scroll_range_.low() + pos * (scroll_range_.delta() - view_range.delta()) /
                                 scroll_bar_.maximum();
-  return {min, min + view_range.delta()};
+  return {min, min + view_range.delta(), axis_.range().kind()};
 }
 
 void HorizontalScrollBarController::OnViewRangeChanged() {
