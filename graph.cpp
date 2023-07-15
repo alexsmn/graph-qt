@@ -245,6 +245,9 @@ QString Graph::GetCursorLabel(const GraphCursor& cursor) const {
 }
 
 QString Graph::GetXAxisLabel(double val) const {
+  if (horizontal_axis_->range().kind() == GraphRange::TIME) {
+    return GetTimeAxisLabel(val, horizontal_axis_->tick_step());
+  }
   return QString::number(val);
 }
 

@@ -1,6 +1,7 @@
 #include "graph_qt/graph_axis.h"
 
 #include "base/auto_reset.h"
+#include "base/time/time.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"
@@ -12,6 +13,8 @@
 #include <QPainter>
 
 namespace views {
+
+namespace {
 
 static const int kLabelHeight = 20;
 
@@ -57,6 +60,53 @@ void Inset(QRect& rect, int left, int top, int right, int bottom) {
   rect.setRect(new_left, new_top, std::max(0, new_right - new_left),
                std::max(0, new_bottom - new_top));
 }
+
+QString FormatTime(base::Time time, const char* format_string) {
+  if (strcmp(format_string, "ms") == 0) {
+    base::Time::Exploded e = {0};
+    time.LocalExplode(&e);
+    return QString{}.asprintf("%d:%02d.%03d", e.minute, e.second, e.millisecond);
+  } else {
+    char buf[128];
+    time_t t = time.ToTimeT();
+#if defined(WIN32)
+    tm ttmv;
+    tm* ttm = localtime_s(&ttmv, &t) == 0 ? &ttmv : nullptr;
+#else
+    tm* ttm = localtime(&t);
+#endif
+    if (!ttm)
+      return {};
+    int size = strftime(buf, sizeof(buf), format_string, ttm);
+    return QString::fromLocal8Bit(buf, size);
+  }
+}
+
+}  // namespace
+
+QString GetTimeAxisLabel(double val, double tick_step) {
+  static const double kSecondStep = 1.0;
+  static const double kMinuteStep = 60 * kSecondStep;
+  static const double kHourStep = 60 * kMinuteStep;
+  static const double kDayStep = 24 * kHourStep;
+
+  // time format
+  const char* format_string;
+  if (tick_step >= kDayStep)
+    format_string = "%#d %b";
+  else if (tick_step >= kHourStep)
+    format_string = "%#d-%#H:%M";
+  else if (tick_step >= kMinuteStep)
+    format_string = "%#H:%M";
+  else if (tick_step >= kSecondStep)
+    format_string = "%#H:%M:%S";
+  else
+    format_string = "ms";  // special msec format
+
+  return FormatTime(base::Time::FromDoubleT(val), format_string);
+}
+
+// GraphAxis
 
 GraphAxis::GraphAxis(QWidget* parent) : QWidget{parent} {
   setMouseTracking(true);

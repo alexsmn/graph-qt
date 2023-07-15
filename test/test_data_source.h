@@ -158,7 +158,9 @@ class VirtualDataSource : public GraphDataSource {
   }
 
   virtual GraphRange GetHorizontalRange() const override {
-    return dataset_.horizontal_range();
+    auto range = dataset_.horizontal_range();
+    range.set_time();
+    return range;
   }
 
  protected:

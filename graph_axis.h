@@ -108,4 +108,6 @@ class GraphAxis : public QWidget {
   bool time_fit_updating_ = false;
 };
 
+QString GetTimeAxisLabel(double val, double tick_step);
+
 }  // namespace views
