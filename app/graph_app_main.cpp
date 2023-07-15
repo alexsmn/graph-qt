@@ -9,11 +9,32 @@
 #include <QApplication>
 #include <QMainWindow>
 #include <QScrollBar>
+#include <QTimer>
 #include <QToolBar>
 #include <vector>
 
 using namespace views;
 using namespace std::chrono_literals;
+
+class UpdatingTestDataSource : public VirtualDataSource {
+ public:
+  explicit UpdatingTestDataSource(std::chrono::milliseconds update_period)
+      : VirtualDataSource{dataset_} {
+    timer_.setInterval(update_period);
+
+    QObject::connect(&timer_, &QTimer::timeout, [this] { AddPoint(); });
+
+    timer_.start();
+  }
+
+ private:
+  VirtualDataset dataset_{.horizontal_min_ = -1000,
+                          .step_ = 100,
+                          .count_ = 100000,
+                          .ramp_count_ = 100};
+
+  QTimer timer_;
+};
 
 int main(int argc, char** argv) {
   QApplication app{argc, argv};
@@ -25,14 +46,12 @@ int main(int argc, char** argv) {
 
   Graph* graph = new Graph{&main_window};
 
-  auto* pane = new GraphPane{};
+  auto* pane = new GraphPane;
   graph->AddPane(*pane);
 
   pane->plot().AddLine(data_source);
 
-  graph->horizontal_axis().SetRange(
-      {TestDataSource::kXOffset + TestDataSource::kInitialCount / 5,
-       TestDataSource::kXOffset + TestDataSource::kInitialCount * 4 / 5});
+  graph->horizontal_axis().SetRange(data_source.GetHorizontalRange());
 
   graph->SetHorizontalScrollBarVisible(true);
 
