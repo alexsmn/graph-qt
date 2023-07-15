@@ -3,6 +3,7 @@
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_plot.h"
+#include "graph_qt/graph_time_helper.h"
 #include "graph_qt/graph_widget.h"
 #include "graph_qt/test/test_data_source.h"
 
@@ -36,10 +37,34 @@ class UpdatingTestDataSource : public VirtualDataSource {
   QTimer timer_;
 };
 
+class UpdatingTimeDataSource : public VirtualDataSource {
+ public:
+  explicit UpdatingTimeDataSource(std::chrono::milliseconds update_period)
+      : VirtualDataSource{dataset_} {
+    timer_.setInterval(update_period);
+
+    QObject::connect(&timer_, &QTimer::timeout, [this] { AddPoint(); });
+
+    timer_.start();
+  }
+
+ private:
+  VirtualDataset dataset_{
+      .horizontal_min_ = ValueFromTime(base::Time::Now() - kRange),
+      .step_ = ValueFromDuration(kStep),
+      .count_ = static_cast<size_t>(kRange / kStep),
+      .ramp_count_ = 100};
+
+  QTimer timer_;
+
+  inline static const base::TimeDelta kStep = base::TimeDelta::FromSeconds(1);
+  inline static const base::TimeDelta kRange = base::TimeDelta::FromDays(365);
+};
+
 int main(int argc, char** argv) {
   QApplication app{argc, argv};
 
-  UpdatingTestDataSource data_source{1s};
+  UpdatingTimeDataSource data_source{1s};
 
   QMainWindow main_window;
   auto* toolbar = main_window.addToolBar("ToolBar");

@@ -1,18 +1,22 @@
 #pragma once
 
+#include <limits>
+
 namespace views {
 
+using GraphValue = double;
+
+const GraphValue kGraphUnknownValue = std::numeric_limits<GraphValue>::min();
+
 struct GraphPoint {
-  GraphPoint() : x(0.0), y(0.0), good(false) {}
-  GraphPoint(double x, double y) : x(x), y(y), good(false) {}
+  GraphPoint() = default;
+  GraphPoint(GraphValue x, GraphValue y) : x(x), y(y) {}
 
-  bool operator==(const GraphPoint& other) const {
-    return x == other.x && y == other.y && good == other.good;
-  }
+  bool operator==(const GraphPoint& other) const = default;
 
-  double x;
-  double y;
-  bool good;
+  GraphValue x = 0.0;
+  GraphValue y = 0.0;
+  bool good = false;
 };
 
-} // namespace views
+}  // namespace views

@@ -6,7 +6,7 @@
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_plot.h"
-#include "graph_qt/graph_time.h"
+#include "graph_qt/graph_time_helper.h"
 #include "graph_qt/model/graph_data_source.h"
 
 #include <QMouseEvent>
@@ -34,14 +34,17 @@ double EstimateValueTickStep(int area_sy, double delta, int min) {
 double EstimateTimeTickStep(double scale, int min) {
   assert(scale >= 0.0);
   static const double times[] = {
-      GraphTime::msec,      GraphTime::msec * 5,   GraphTime::msec * 10,
-      GraphTime::msec * 50, GraphTime::msec * 100, GraphTime::msec * 500,
-      GraphTime::sec,       5 * GraphTime::sec,    5 * GraphTime::sec,
-      15 * GraphTime::sec,  30 * GraphTime::sec,   GraphTime::min,
-      5 * GraphTime::min,   15 * GraphTime::min,   30 * GraphTime::min,
-      GraphTime::hour,      2 * GraphTime::hour,   3 * GraphTime::hour,
-      4 * GraphTime::hour,  6 * GraphTime::hour,   12 * GraphTime::hour,
-      GraphTime::day};
+      GraphTimeHelper::msec,       GraphTimeHelper::msec * 5,
+      GraphTimeHelper::msec * 10,  GraphTimeHelper::msec * 50,
+      GraphTimeHelper::msec * 100, GraphTimeHelper::msec * 500,
+      GraphTimeHelper::sec,        5 * GraphTimeHelper::sec,
+      5 * GraphTimeHelper::sec,    15 * GraphTimeHelper::sec,
+      30 * GraphTimeHelper::sec,   GraphTimeHelper::min,
+      5 * GraphTimeHelper::min,    15 * GraphTimeHelper::min,
+      30 * GraphTimeHelper::min,   GraphTimeHelper::hour,
+      2 * GraphTimeHelper::hour,   3 * GraphTimeHelper::hour,
+      4 * GraphTimeHelper::hour,   6 * GraphTimeHelper::hour,
+      12 * GraphTimeHelper::hour,  GraphTimeHelper::day};
   if (scale <= 0)
     return times[_countof(times) - 1];
   for (int i = 0; i < _countof(times); i++) {
@@ -65,7 +68,7 @@ QString FormatTime(base::Time time, const char* format_string) {
   if (strcmp(format_string, "ms") == 0) {
     base::Time::Exploded e = {0};
     time.LocalExplode(&e);
-    return QString{}.asprintf("%d:%02d.%03d", e.minute, e.second, e.millisecond);
+    return QString::asprintf("%d:%02d.%03d", e.minute, e.second, e.millisecond);
   } else {
     char buf[128];
     time_t t = time.ToTimeT();

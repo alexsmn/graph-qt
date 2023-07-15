@@ -1,12 +1,11 @@
 #pragma once
 
+#include "graph_qt/model/graph_types.h"
+
 #include <cassert>
-#include <limits>
 #include <ostream>
 
 namespace views {
-
-const double kGraphUnknownValue = std::numeric_limits<double>::min();
 
 class GraphRange {
  public:
