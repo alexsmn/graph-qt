@@ -449,6 +449,9 @@ void GraphAxis::Fit() {
   }
 
   auto range = this->range();
+  if (range.empty()) {
+    return;
+  }
 
   if (time_fit_ && !scroll_range_.empty()) {
     range = scroll_range_.high_subrange(range.delta());

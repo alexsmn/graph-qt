@@ -38,13 +38,13 @@ class GraphRange {
   }
 
   GraphRange combine(const GraphRange& other) const {
-    assert(kind_ == other.kind_);
     if (other.empty()) {
       return *this;
     }
     if (empty()) {
       return other;
     }
+    assert(kind_ == other.kind_);
     return GraphRange{std::min(low_, other.low_), std::max(high_, other.high_),
                       kind_};
   }

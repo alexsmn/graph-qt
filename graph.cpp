@@ -24,7 +24,7 @@ namespace views {
 // Graph
 
 Graph::Graph(QWidget* parent) : QFrame{parent} {
-  setLayout(new QVBoxLayout{this});
+  setLayout(new QVBoxLayout);
   layout()->setMargin(0);
   layout()->setSpacing(0);
 
@@ -36,7 +36,7 @@ Graph::Graph(QWidget* parent) : QFrame{parent} {
   // The bottom layout row under the panes. It contains both the horizontal axis
   // and the scroll bar, as they are both indented from the right by the width
   // of the vertical axis.
-  auto* bottom_layout = new QVBoxLayout{this};
+  auto* bottom_layout = new QVBoxLayout;
   bottom_layout->setContentsMargins(0, 0, kVerticalAxisWidth, 0);
   bottom_layout->setSpacing(0);
   layout()->addItem(bottom_layout);
