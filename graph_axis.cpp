@@ -422,7 +422,13 @@ void GraphAxis::SetRange(const GraphRange& range) {
   if (range_ == range)
     return;
 
-  range_ = range;
+  auto adjusted_range = range;
+  graph_->AdjustTimeRange(adjusted_range);
+
+  if (range_ == adjusted_range)
+    return;
+
+  range_ = adjusted_range;
 
   // Update tick step.
   CalcDrawRect();
@@ -436,7 +442,7 @@ void GraphAxis::SetRange(const GraphRange& range) {
     time_fit_ = false;
   }
 
-  emit rangeChanged(range);
+  emit rangeChanged(adjusted_range);
 }
 
 void GraphAxis::InvalidateCursor(const GraphCursor& cursor) {
@@ -456,8 +462,6 @@ void GraphAxis::Fit() {
   if (time_fit_ && !scroll_range_.empty()) {
     range = scroll_range_.high_subrange(range.delta());
   }
-
-  graph_->AdjustTimeRange(range);
 
   base::AutoReset updating{&time_fit_updating_, true};
   SetRange(range);
