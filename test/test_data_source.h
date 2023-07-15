@@ -48,11 +48,12 @@ class TestDataSource : public GraphDataSource {
 
   virtual double GetCurrentValue() const override { return points_.back().y; }
 
-  virtual PointEnumerator* EnumPoints(double from,
-                                      double to,
-                                      bool include_left_bound,
-                                      bool include_right_bound) override {
-    return new TestPointEnumerator{points_};
+  virtual std::unique_ptr<PointEnumerator> EnumPoints(
+      double from,
+      double to,
+      bool include_left_bound,
+      bool include_right_bound) override {
+    return std::make_unique<TestPointEnumerator>(points_);
   }
 
   virtual GraphRange GetHorizontalRange() const override {
@@ -145,16 +146,17 @@ class VirtualDataSource : public GraphDataSource {
 
   virtual double GetCurrentValue() const override { return dataset_.current(); }
 
-  virtual PointEnumerator* EnumPoints(double from,
-                                      double to,
-                                      bool include_left_bound,
-                                      bool include_right_bound) override {
+  virtual std::unique_ptr<PointEnumerator> EnumPoints(
+      double from,
+      double to,
+      bool include_left_bound,
+      bool include_right_bound) override {
     auto indexes = dataset_.index_range(from, to);
     if (!indexes) {
       return nullptr;
     }
-    return new VirtualPointEnumerator{dataset_, indexes->first,
-                                      indexes->second};
+    return std::make_unique<VirtualPointEnumerator>(dataset_, indexes->first,
+                                                    indexes->second);
   }
 
   virtual GraphRange GetHorizontalRange() const override {

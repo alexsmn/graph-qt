@@ -34,10 +34,11 @@ class GraphDataSource {
 
   virtual double GetCurrentValue() const { return kGraphUnknownValue; };
 
-  virtual PointEnumerator* EnumPoints(double from,
-                                      double to,
-                                      bool include_left_bound,
-                                      bool include_right_bound) = 0;
+  virtual std::unique_ptr<PointEnumerator> EnumPoints(
+      double from,
+      double to,
+      bool include_left_bound,
+      bool include_right_bound) = 0;
 
   virtual QString GetYAxisLabel(double value) const;
 

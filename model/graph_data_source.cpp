@@ -11,7 +11,7 @@ GraphDataSource::~GraphDataSource() {
 }
 
 GraphRange GraphDataSource::CalculateAutoRange(double x1, double x2) {
-  PointEnumerator* point_enum = EnumPoints(x1, x2, true, false);
+  auto point_enum = EnumPoints(x1, x2, true, false);
   if (!point_enum)
     return GraphRange();
 

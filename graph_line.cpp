@@ -79,7 +79,7 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
   QBrush brush(color_);
 
   GraphPoint value;
-  PointEnumerator* point_enum = data_source_->EnumPoints(x1, x2, true, true);
+  auto point_enum = data_source_->EnumPoints(x1, x2, true, true);
   if (point_enum && point_enum->EnumNext(value)) {
     // select pen
     QPen solid_pen(brush, line_weight_);
@@ -193,7 +193,7 @@ bool GraphLine::GetNearestPoint(const QPoint& screen_point,
   double x1 = XToValue(0);
   double x2 = XToValue(plot().width());
 
-  PointEnumerator* point_enum = data_source_->EnumPoints(x1, x2, true, false);
+  auto point_enum = data_source_->EnumPoints(x1, x2, true, false);
   if (!point_enum)
     return false;
 
@@ -223,10 +223,12 @@ void GraphLine::SetVerticalRange(const GraphRange& range) {
 }
 
 void GraphLine::AdjustHorizontalRange(GraphRange& range) const {
-  const auto* points =
-      data_source_->EnumPoints(range.low(), range.high(), false, false);
-  if (!points || points->GetCount() <= kMaxPoints)
-    return;
+  {
+    auto points =
+        data_source_->EnumPoints(range.low(), range.high(), false, false);
+    if (!points || points->GetCount() <= kMaxPoints)
+      return;
+  }
 
   // Binary search for low bound to keep kMaxPoints points.
 
@@ -235,7 +237,7 @@ void GraphLine::AdjustHorizontalRange(GraphRange& range) const {
 
   for (;;) {
     double value = (min + max) / 2;
-    auto* points = data_source_->EnumPoints(value, range.high_, false, false);
+    auto points = data_source_->EnumPoints(value, range.high_, false, false);
     auto count = points ? points->GetCount() : 0;
 
     // Allow 5% error.
