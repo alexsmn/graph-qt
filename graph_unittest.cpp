@@ -45,7 +45,7 @@ TEST_F(GraphTest, TimeFit) {
   // Expect that the viewed range was shifted to the high bound.
   EXPECT_EQ(
       graph_.horizontal_axis().range(),
-      GraphRange(view_range.high() - view_range.delta(), view_range.high()));
+      GraphRange(data_range.high() - view_range.delta(), data_range.high()));
 }
 
 }  // namespace views
