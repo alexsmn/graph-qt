@@ -9,6 +9,7 @@
 #include "graph_qt/graph_time_helper.h"
 #include "graph_qt/model/graph_data_source.h"
 
+#include <QDateTime>
 #include <QMouseEvent>
 #include <QPainter>
 
@@ -64,27 +65,6 @@ void Inset(QRect& rect, int left, int top, int right, int bottom) {
                std::max(0, new_bottom - new_top));
 }
 
-QString FormatTime(base::Time time, const char* format_string) {
-  if (strcmp(format_string, "ms") == 0) {
-    base::Time::Exploded e = {0};
-    time.LocalExplode(&e);
-    return QString::asprintf("%d:%02d.%03d", e.minute, e.second, e.millisecond);
-  } else {
-    char buf[128];
-    time_t t = time.ToTimeT();
-#if defined(WIN32)
-    tm ttmv;
-    tm* ttm = localtime_s(&ttmv, &t) == 0 ? &ttmv : nullptr;
-#else
-    tm* ttm = localtime(&t);
-#endif
-    if (!ttm)
-      return {};
-    int size = strftime(buf, sizeof(buf), format_string, ttm);
-    return QString::fromLocal8Bit(buf, size);
-  }
-}
-
 }  // namespace
 
 QString GetTimeAxisLabel(double val, double tick_step) {
@@ -93,20 +73,20 @@ QString GetTimeAxisLabel(double val, double tick_step) {
   static const double kHourStep = 60 * kMinuteStep;
   static const double kDayStep = 24 * kHourStep;
 
-  // time format
-  const char* format_string;
-  if (tick_step >= kDayStep)
-    format_string = "%#d %b";
-  else if (tick_step >= kHourStep)
-    format_string = "%#d-%#H:%M";
-  else if (tick_step >= kMinuteStep)
-    format_string = "%#H:%M";
-  else if (tick_step >= kSecondStep)
-    format_string = "%#H:%M:%S";
-  else
-    format_string = "ms";  // special msec format
+  auto date_time =
+      QDateTime::fromMSecsSinceEpoch(base::Time::FromDoubleT(val).ToJavaTime());
 
-  return FormatTime(base::Time::FromDoubleT(val), format_string);
+  if (tick_step >= kDayStep) {
+    return date_time.toString("d MMM");
+  } else if (tick_step >= kHourStep) {
+    return date_time.toString("d-hh:mm");
+  } else if (tick_step >= kMinuteStep) {
+    return date_time.toString("h:mm");
+  } else if (tick_step >= kSecondStep) {
+    return date_time.toString("h:mm:ss");
+  } else {
+    return date_time.toString("m:ss.zzz");
+  }
 }
 
 // GraphAxis
