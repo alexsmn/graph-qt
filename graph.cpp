@@ -65,7 +65,11 @@ Graph::Graph(QWidget* parent) : QFrame{parent} {
                                                       *horizontal_axis_);
 
   setFrameStyle(QFrame::StyledPanel);
-  setStyleSheet("background-color: white;");
+
+  QPalette palette = this->palette();
+  palette.setColor(backgroundRole(), Qt::white);
+  setAutoFillBackground(true);
+  setPalette(palette);
 }
 
 Graph::~Graph() {
