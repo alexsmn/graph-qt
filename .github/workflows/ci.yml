@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout ChromiumBase
+        uses: actions/checkout@v4
+        with:
+          repository: alexsmn/chromebase
+          path: chromebase
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 'a34c873a9717a888f58dc05268dea15592c2f0ff'
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '5.15.2'
+          arch: 'win32_msvc2019'
+
+      - name: Install vcpkg packages
+        run: vcpkg install gtest:x86-windows icu:x86-windows
+
+      - name: Configure
+        run: |
+          cmake -B build -G "Visual Studio 17 2022" -A Win32 `
+            -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" `
+            -DCMAKE_MODULE_PATH="${{ github.workspace }}/chromebase" `
+            -DCMAKE_PREFIX_PATH="${env:Qt5_DIR}"
+
+      - name: Build
+        run: cmake --build build --config Debug
+
+      - name: Test
+        run: ctest --test-dir build --config Debug --output-on-failure
