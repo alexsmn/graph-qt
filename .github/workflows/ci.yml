@@ -31,7 +31,7 @@ jobs:
           arch: 'win32_msvc2019'
 
       - name: Install vcpkg packages
-        run: vcpkg install gtest:x86-windows icu:x86-windows
+        run: '& "${env:VCPKG_ROOT}/vcpkg" install gtest:x86-windows icu:x86-windows'
 
       - name: Configure
         run: |
