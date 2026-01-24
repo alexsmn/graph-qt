@@ -44,10 +44,13 @@ set_property(TARGET graph_qt PROPERTY AUTOMOC ON)
 # UTs
 
 add_executable(graph_qt_unittests
+  graph_rendering_unittest.cpp
   graph_unittest.cpp
   test/unittest_main.cpp
 )
 target_link_libraries(graph_qt_unittests PRIVATE GTest::gmock graph_qt)
-add_test(NAME graph_qt_unittests COMMAND graph_qt_unittests)
+add_test(NAME graph_qt_unittests COMMAND graph_qt_unittests
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)
 
 add_subdirectory(app)

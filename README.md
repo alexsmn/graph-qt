@@ -36,3 +36,14 @@ ctest --preset windows-x86-debug
 
 - `graph_qt` - Static library
 - `graph_qt_tester` - Demo application
+
+## Updating Golden Screenshots
+
+The rendering tests compare widget output against golden images stored in `testdata/`. To update golden screenshots after intentional visual changes:
+
+1. Delete the outdated golden image(s) from `testdata/`
+2. Run the tests - new golden images will be generated automatically
+3. Verify the new images look correct
+4. Commit the updated golden images
+
+When a rendering test fails, it saves the actual output as `testdata/actual_*.png` for comparison.
