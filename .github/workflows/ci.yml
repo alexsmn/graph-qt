@@ -7,6 +7,34 @@ on:
     branches: [main]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout ChromiumBase
+        uses: actions/checkout@v4
+        with:
+          repository: alexsmn/chromebase
+          path: chromebase
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-tidy ninja-build qtbase5-dev libgtest-dev
+
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_MODULE_PATH="${{ github.workspace }}/chromebase"
+
+      - name: Run clang-tidy
+        run: |
+          run-clang-tidy -p build -header-filter='graph_qt/.*' \
+            $(find . -name '*.cpp' -not -path './build/*' -not -path './chromebase/*')
+
   build:
     runs-on: windows-latest
 

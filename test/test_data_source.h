@@ -31,9 +31,10 @@ class TestPointEnumerator : public PointEnumerator {
 
 class TestDataSource : public GraphDataSource {
  public:
-  TestDataSource() {
+  // Creates a data source with linear data: y = slope * x + offset.
+  explicit TestDataSource(double slope = 1.0, double y_offset = 0.0) {
     for (int i = 0; i < kInitialCount; ++i) {
-      points_.emplace_back(kXOffset + i, i);
+      points_.emplace_back(kXOffset + i, slope * i + y_offset);
     }
   }
 

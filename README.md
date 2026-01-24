@@ -2,6 +2,12 @@
 
 Qt5-based graphing widget library for displaying time-series data with interactive panning, zooming, and cursors.
 
+## Screenshots
+
+![Basic Graph](testdata/basic_graph.png)
+![Multiple Lines](testdata/multiple_lines.png)
+![Multiple Panes](testdata/multiple_panes.png)
+
 ## Prerequisites
 
 - CMake 3.26+
@@ -30,6 +36,34 @@ cmake --build --preset windows-x86-debug
 
 ```batch
 ctest --preset windows-x86-debug
+```
+
+## Static Analysis (clang-tidy)
+
+The project includes a `.clang-tidy` configuration for static analysis.
+
+**Requirements:** LLVM/Clang toolchain with `clang-tidy` ([LLVM releases](https://releases.llvm.org/)) in PATH.
+
+### Running clang-tidy
+
+**Option 1: CMake integration** (runs during build)
+
+```batch
+cmake --preset windows-x86-debug -DCLANG_TIDY=ON
+cmake --build --preset windows-x86-debug
+```
+
+**Option 2: Direct invocation** (requires compile_commands.json)
+
+```bash
+# Generate compilation database (use Ninja generator)
+cmake -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ...
+
+# Run on all source files
+run-clang-tidy -p build -header-filter='graph_qt/.*'
+
+# Run on a single file
+clang-tidy -p build graph_line.cpp
 ```
 
 ## Outputs
