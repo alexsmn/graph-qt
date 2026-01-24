@@ -36,7 +36,10 @@
       "name": "windows-x86-debug",
       "displayName": "Windows x86 Debug Tests",
       "configurePreset": "windows-x86-debug",
-      "configuration": "Debug"
+      "configuration": "Debug",
+      "environment": {
+        "PATH": "<path-to-qt>/5.15.2/msvc2019/bin;<path-to-vcpkg>/installed/x86-windows/bin;$penv{PATH}"
+      }
     }
   ]
 }

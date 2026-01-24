@@ -35,5 +35,4 @@ ctest --preset windows-x86-debug
 ## Outputs
 
 - `graph_qt` - Static library
-- `graph_qt_unittests` - Unit tests
 - `graph_qt_tester` - Demo application

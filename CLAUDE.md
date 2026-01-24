@@ -60,3 +60,11 @@ Graph (QFrame)
 ## Code Style
 
 Uses Chromium C++ style (see `.clang-format`). Include order: local headers first, then system/third-party.
+
+## Testing
+
+Test files must be located next to the files where the tested functionality is defined. Name test files with a `_unittest.cpp` suffix (e.g., `graph_range.h` → `graph_range_unittest.cpp`).
+
+## CMake
+
+Do not use `file(GLOB ...)` in CMakeLists.txt. List source files explicitly to ensure proper rebuild detection when files are added or removed.
