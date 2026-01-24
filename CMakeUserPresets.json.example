@@ -1,0 +1,42 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "windows-x86-debug",
+      "displayName": "Windows x86 Debug",
+      "inherits": "windows-x86-base",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_MODULE_PATH": "<path-to-chromebase>",
+        "CMAKE_PREFIX_PATH": "<path-to-qt>/5.15.2/msvc2019"
+      }
+    },
+    {
+      "name": "windows-x86-release",
+      "displayName": "Windows x86 Release",
+      "inherits": "windows-x86-debug"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "windows-x86-debug",
+      "displayName": "Windows x86 Debug",
+      "configurePreset": "windows-x86-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-x86-release",
+      "displayName": "Windows x86 Release",
+      "configurePreset": "windows-x86-release",
+      "configuration": "Release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "windows-x86-debug",
+      "displayName": "Windows x86 Debug Tests",
+      "configurePreset": "windows-x86-debug",
+      "configuration": "Debug"
+    }
+  ]
+}
