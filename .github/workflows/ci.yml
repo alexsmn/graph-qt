@@ -9,11 +9,16 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: graph_qt
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: graph_qt
 
       - name: Checkout ChromiumBase
-        run: git clone https://github.com/alexsmn/chromebase.git chromebase
+        run: git clone https://github.com/alexsmn/chromebase.git ../chromebase
 
       - name: Install dependencies
         run: |
@@ -30,7 +35,7 @@ jobs:
       - name: Run clang-tidy
         run: |
           run-clang-tidy -p build -header-filter='graph_qt/.*' \
-            $(find . -name '*.cpp' -not -path './build/*' -not -path './chromebase/*')
+            $(find . -name '*.cpp' -not -path './build/*')
 
   build:
     runs-on: windows-latest
