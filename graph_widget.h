@@ -20,9 +20,9 @@ class GraphWidget : public QWidget {
 
   // View
   //virtual gfx::Size GetPreferredSize() const { return gfx::Size(); }
-  virtual void mousePressEvent(QMouseEvent* e) override;
-  virtual void mouseReleaseEvent(QMouseEvent* e) override;
-  virtual void mouseMoveEvent(QMouseEvent* e) override;
+  void mousePressEvent(QMouseEvent* e) override;
+  void mouseReleaseEvent(QMouseEvent* e) override;
+  void mouseMoveEvent(QMouseEvent* e) override;
 
 protected:
   GraphPane& pane_;

@@ -20,15 +20,18 @@ namespace {
 static const int kLabelHeight = 20;
 
 double EstimateValueTickStep(int area_sy, double delta, int min) {
-  if (area_sy <= 0)
+  if (area_sy <= 0) {
     return 1.0;
+  }
   double step = delta / 10.0;
   double f = pow(10.0, floor(log10(step)));
   step = floor(step / f) * f;
-  while (step * 2.0 * area_sy / delta < min)
+  while (step * 2.0 * area_sy / delta < min) {
     step *= 2.0;
-  while (step / 2.0 * area_sy / delta > min)
+  }
+  while (step / 2.0 * area_sy / delta > min) {
     step /= 2.0;
+  }
   return step;
 }
 
@@ -46,12 +49,14 @@ double EstimateTimeTickStep(double scale, int min) {
       2 * GraphTimeHelper::hour,   3 * GraphTimeHelper::hour,
       4 * GraphTimeHelper::hour,   6 * GraphTimeHelper::hour,
       12 * GraphTimeHelper::hour,  GraphTimeHelper::day};
-  if (scale <= 0)
+  if (scale <= 0) {
     return times[_countof(times) - 1];
+  }
   for (int i = 0; i < _countof(times); i++) {
-    int sx = (int)(times[i] * scale);
-    if (sx >= min)
+    int sx = static_cast<int>(times[i] * scale);
+    if (sx >= min) {
       return times[i];
+    }
   }
   return times[_countof(times) - 1];
 }
@@ -124,8 +129,9 @@ void GraphAxis::GetTickValues(double& first_value, double& last_value) const {
 void GraphAxis::paintEvent(QPaintEvent* e) {
   assert(graph_);
 
-  if (range_.empty())
+  if (range_.empty()) {
     return;
+  }
 
   QPainter painter(this);
 
@@ -135,7 +141,8 @@ void GraphAxis::paintEvent(QPaintEvent* e) {
   else
     painter.drawLine(0, 0, width(), 0);*/
 
-  double first_value, last_value;
+  double first_value = 0.0;
+  double last_value = 0.0;
   GetTickValues(first_value, last_value);
 
   // TODO: Draw values inside clip rect only.
@@ -159,11 +166,12 @@ void GraphAxis::paintEvent(QPaintEvent* e) {
   }
 }
 
-void GraphAxis::PaintTick(QPainter& painter, int pos) {
-  if (is_vertical_)
+void GraphAxis::PaintTick(QPainter& painter, int pos) const {
+  if (is_vertical_) {
     painter.drawLine(0, pos, 3, pos);
-  else
+  } else {
     painter.drawLine(pos, 0, pos, 4);
+  }
 }
 
 void GraphAxis::PaintLabel(QPainter& painter, int pos, const QString& label) {
@@ -180,12 +188,14 @@ void GraphAxis::PaintLabel(QPainter& painter, int pos, const QString& label) {
 }
 
 void GraphAxis::PaintCurrentValue(QPainter& painter, const GraphLine& line) {
-  if (!line.data_source())
+  if (!line.data_source()) {
     return;
+  }
 
   double value = line.current_value();
-  if (value == kGraphUnknownValue)
+  if (value == kGraphUnknownValue) {
     return;
+  }
 
   auto rect = GetCurrentValueRect(value);
 
@@ -232,13 +242,15 @@ QRect GraphAxis::GetCursorLabelRect(const GraphCursor& cursor) const {
 
 double GraphAxis::ConvertScreenToValue(int pos) const {
   if (is_vertical_) {
-    if (draw_rc.height() == 0)
+    if (draw_rc.height() == 0) {
       return range_.low();
+    }
     return range_.low() +
            (draw_rc.bottom() - pos) * range_.delta() / draw_rc.height();
   } else {
-    if (width() == 0)
+    if (width() == 0) {
       return range_.low();
+    }
     return range_.low() +
            (pos - draw_rc.x()) * range_.delta() / draw_rc.width();
   }
@@ -246,15 +258,19 @@ double GraphAxis::ConvertScreenToValue(int pos) const {
 
 int GraphAxis::ConvertValueToScreen(double value) const {
   if (is_vertical_) {
-    if (range_.empty())
+    if (range_.empty()) {
       return draw_rc.bottom();
-    return draw_rc.bottom() - (int)floor((value - range_.low()) *
-                                         draw_rc.height() / range_.delta());
+    }
+    return draw_rc.bottom() -
+           static_cast<int>(floor((value - range_.low()) * draw_rc.height() /
+                                  range_.delta()));
   } else {
-    if (range_.empty())
+    if (range_.empty()) {
       return draw_rc.x();
-    return draw_rc.x() + (int)floor((value - range_.low()) * draw_rc.width() /
-                                    range_.delta());
+    }
+    return draw_rc.x() +
+           static_cast<int>(floor((value - range_.low()) * draw_rc.width() /
+                                  range_.delta()));
   }
 }
 
@@ -281,10 +297,11 @@ void GraphAxis::CalcDrawRect() {
     Inset(draw_rc, 0, Graph::kDrawingRectOffsetY, 0,
           Graph::kDrawingRectOffsetY);
 
-    if (range_.kind() == GraphRange::LOGICAL)
+    if (range_.kind() == GraphRange::LOGICAL) {
       tick_step_ = range;
-    else
+    } else {
       tick_step_ = EstimateValueTickStep(draw_rc.height(), range, 30);
+    }
 
   } else {
     Inset(draw_rc, Graph::kDrawingRectOffsetX + 1, 0,
@@ -382,8 +399,9 @@ const GraphCursor* GraphAxis::GetCursorLabelAt(QPoint point) const {
   for (auto i = cursors_.begin(); i != cursors_.end(); ++i) {
     const GraphCursor& cursor = *i;
     auto rect = GetCursorLabelRect(cursor);
-    if (rect.contains(point))
+    if (rect.contains(point)) {
       return &cursor;
+    }
   }
 
   return nullptr;

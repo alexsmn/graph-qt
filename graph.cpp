@@ -79,8 +79,9 @@ Graph::~Graph() {
 void Graph::mousePressEvent(QMouseEvent* e) {
   if (e->button() == Qt::RightButton) {
     // delete selected cursor
-    if (selected_cursor_)
+    if (selected_cursor_) {
       DeleteCursor(*selected_cursor_);
+    }
     return;
   }
 }
@@ -88,19 +89,22 @@ void Graph::mousePressEvent(QMouseEvent* e) {
 GraphPane* Graph::GetNextPane(GraphPane* pane) const {
   assert(pane);
   auto i = std::find(panes_.begin(), panes_.end(), pane);
-  if (i == panes_.end())
+  if (i == panes_.end()) {
     return nullptr;
+  }
   i++;
-  if (i == panes_.end())
+  if (i == panes_.end()) {
     return nullptr;
+  }
   return *i;
 }
 
 GraphPane* Graph::GetPrevPane(GraphPane* pane) const {
   assert(pane);
   auto i = std::find(panes_.begin(), panes_.end(), pane);
-  if (i == panes_.begin())
+  if (i == panes_.begin()) {
     return nullptr;
+  }
   i--;
   return *i;
 }
@@ -109,12 +113,14 @@ void Graph::DeletePane(GraphPane& pane) {
   // Remove from zooming history.
   for (auto i = zooming_history_.begin(); i != zooming_history_.end(); ++i) {
     ZoomingHistoryItem& item = *i;
-    if (item.pane_ == &pane)
+    if (item.pane_ == &pane) {
       item.pane_ = nullptr;
+    }
   }
 
-  if (&pane == selected_pane_)
+  if (&pane == selected_pane_) {
     SelectPane(nullptr);
+  }
 
   // delete pane from chart
   auto pi = std::find(panes_.begin(), panes_.end(), &pane);
@@ -126,8 +132,9 @@ void Graph::DeletePane(GraphPane& pane) {
 }
 
 void Graph::SelectPane(GraphPane* pane) {
-  if (pane == selected_pane_)
+  if (pane == selected_pane_) {
     return;
+  }
 
   //	if (selected_pane_)
   //		InvalidatePane(selected_pane_);
@@ -135,8 +142,9 @@ void Graph::SelectPane(GraphPane* pane) {
   //	if (selected_pane_)
   //		InvalidatePane(selected_pane_);
 
-  if (controller_)
+  if (controller_) {
     controller_->OnGraphSelectPane();
+  }
 }
 
 void Graph::InvalidateCursor(const GraphCursor& cursor) {
@@ -144,8 +152,9 @@ void Graph::InvalidateCursor(const GraphCursor& cursor) {
     cursor.axis_->plot()->InvalidateCursor(cursor);
 
   } else {
-    for (auto i = panes_.begin(); i != panes_.end(); ++i)
+    for (auto i = panes_.begin(); i != panes_.end(); ++i) {
       (*i)->plot().InvalidateCursor(cursor);
+    }
   }
 
   cursor.axis_->InvalidateCursor(cursor);
@@ -164,8 +173,9 @@ void Graph::MoveCursor(const GraphCursor& cursor, double position) {
 }
 
 void Graph::SelectCursor(const GraphCursor* cursor) {
-  if (selected_cursor_)
+  if (selected_cursor_) {
     InvalidateCursor(*selected_cursor_);
+  }
 
   selected_cursor_ = const_cast<GraphCursor*>(cursor);
 
@@ -181,8 +191,9 @@ void Graph::SelectCursor(const GraphCursor* cursor) {
 void Graph::DeleteCursor(const GraphCursor& cursor) {
   InvalidateCursor(cursor);
 
-  if (selected_cursor_ == &cursor)
+  if (selected_cursor_ == &cursor) {
     selected_cursor_ = nullptr;
+  }
 
   cursor.axis_->DeleteCursor(cursor);
 
@@ -193,8 +204,9 @@ void Graph::DeleteCursor(const GraphCursor& cursor) {
 
 void Graph::AdjustTimeRange(GraphRange& range) const {
   for (const auto* pane : panes_) {
-    for (const auto* line : pane->plot().lines())
+    for (const auto* line : pane->plot().lines()) {
       line->AdjustHorizontalRange(range);
+    }
   }
 }
 
@@ -237,14 +249,15 @@ void Graph::UpdateVerticalAutoRanges() {
 }
 
 QString Graph::GetCursorLabel(const GraphCursor& cursor) const {
-  if (!cursor.axis_->is_vertical())
+  if (!cursor.axis_->is_vertical()) {
     return GetXAxisLabel(cursor.position_);
-  else {
+  } else {
     GraphLine* line = cursor.axis_->plot()->primary_line();
-    if (line && line->data_source())
+    if (line && line->data_source()) {
       return line->data_source()->GetYAxisLabel(cursor.position_);
-    else
+    } else {
       return QString();
+    }
   }
 }
 
@@ -269,8 +282,9 @@ void Graph::AddPane(GraphPane& pane) {
 }
 
 void Graph::DeleteAllPanes() {
-  for (auto i = panes_.begin(); i != panes_.end(); i++)
+  for (auto i = panes_.begin(); i != panes_.end(); i++) {
     delete *i;
+  }
   panes_.clear();
 }
 

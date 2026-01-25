@@ -22,7 +22,7 @@ class GraphLine : protected GraphDataSource::Observer {
   virtual ~GraphLine();
 
   QColor color() const { return color_; }
-  void SetColor(QColor color);
+  void SetColor(const QColor& color);
 
   GraphDataSource* data_source() { return data_source_; }
   const GraphDataSource* data_source() const { return data_source_; }
@@ -66,15 +66,15 @@ class GraphLine : protected GraphDataSource::Observer {
   void DrawLimit(QPainter& painter,
                  const QRect& rect,
                  double limit,
-                 const QPen& pen);
+                 const QPen& pen) const;
 
   virtual void Draw(QPainter& painter, const QRect& rect);
 
  protected:
   // GraphDataSource::Observer
-  virtual void OnDataSourceItemChanged() override;
-  virtual void OnDataSourceHistoryChanged() override;
-  virtual void OnDataSourceCurrentValueChanged() override;
+  void OnDataSourceItemChanged() override;
+  void OnDataSourceHistoryChanged() override;
+  void OnDataSourceCurrentValueChanged() override;
 
  private:
   // graph line flags_
@@ -92,10 +92,11 @@ class GraphLine : protected GraphDataSource::Observer {
   void SetVerticalRangeHelper(const GraphRange& range);
 
   void set_flag(int flag, bool set) {
-    if (set)
+    if (set) {
       flags_ |= flag;
-    else
+    } else {
       flags_ &= ~flag;
+    }
   }
 
   void SetCurrentValue(double value);

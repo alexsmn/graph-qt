@@ -12,21 +12,24 @@ GraphDataSource::~GraphDataSource() {
 
 GraphRange GraphDataSource::CalculateAutoRange(double x1, double x2) {
   auto point_enum = EnumPoints(x1, x2, true, false);
-  if (!point_enum)
+  if (!point_enum) {
     return GraphRange();
+  }
 
   GraphPoint point;
-  if (!point_enum->EnumNext(point))
+  if (!point_enum->EnumNext(point)) {
     return GraphRange();
+  }
 
   double low = point.y;
   double high = point.y;
 
   while (point_enum->EnumNext(point)) {
-    if (point.y < low)
+    if (point.y < low) {
       low = point.y;
-    else if (point.y > high)
+    } else if (point.y > high) {
       high = point.y;
+    }
   }
 
   return GraphRange(low, high);

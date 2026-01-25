@@ -29,21 +29,25 @@ inline int CalcPointDistance(const QPoint& a, const QPoint& b) {
 GraphLine::GraphLine() = default;
 
 GraphLine::~GraphLine() {
-  if (data_source_)
+  if (data_source_) {
     data_source_->SetObserver(nullptr);
+  }
 }
 
 void GraphLine::SetDataSource(GraphDataSource* data_source) {
-  if (data_source_ == data_source)
+  if (data_source_ == data_source) {
     return;
+  }
 
-  if (data_source_)
+  if (data_source_) {
     data_source_->SetObserver(nullptr);
+  }
 
   data_source_ = data_source;
 
-  if (data_source_)
+  if (data_source_) {
     data_source_->SetObserver(this);
+  }
 
   SetCurrentValue(data_source_ ? data_source_->GetCurrentValue()
                                : kGraphUnknownValue);
@@ -52,14 +56,15 @@ void GraphLine::SetDataSource(GraphDataSource* data_source) {
   UpdateVerticalRange();
 
   // Values changed, need to invalidate.
-  if (plot_)
+  if (plot_) {
     plot_->update();
+  }
 }
 
 void GraphLine::DrawLimit(QPainter& painter,
                           const QRect& rect,
                           double limit,
-                          const QPen& pen) {
+                          const QPen& pen) const {
   int y = ValueToY(limit);
   // TODO: Set pen preliminary.
   painter.save();
@@ -69,8 +74,9 @@ void GraphLine::DrawLimit(QPainter& painter,
 }
 
 void GraphLine::Draw(QPainter& painter, const QRect& rect) {
-  if (!data_source_)
+  if (!data_source_) {
     return;
+  }
 
   // get range from screen
   double x1 = XToValue(rect.x());
@@ -129,19 +135,24 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
   }
 
   QPen limits_pen(brush, 1, Qt::DashLine);
-  if (data_source_->limit_hi_ != kGraphUnknownValue)
+  if (data_source_->limit_hi_ != kGraphUnknownValue) {
     DrawLimit(painter, rect, data_source_->limit_hi_, limits_pen);
-  if (data_source_->limit_lo_ != kGraphUnknownValue)
+  }
+  if (data_source_->limit_lo_ != kGraphUnknownValue) {
     DrawLimit(painter, rect, data_source_->limit_lo_, limits_pen);
-  if (data_source_->limit_hihi_ != kGraphUnknownValue)
+  }
+  if (data_source_->limit_hihi_ != kGraphUnknownValue) {
     DrawLimit(painter, rect, data_source_->limit_hihi_, limits_pen);
-  if (data_source_->limit_lolo_ != kGraphUnknownValue)
+  }
+  if (data_source_->limit_lolo_ != kGraphUnknownValue) {
     DrawLimit(painter, rect, data_source_->limit_lolo_, limits_pen);
+  }
 }
 
 void GraphLine::SetCurrentValue(double value) {
-  if (current_value_ == value)
+  if (current_value_ == value) {
     return;
+  }
 
   if (plot_ && current_value_ != kGraphUnknownValue) {
     plot_->vertical_axis().InvalidateCurrentValue(current_value_);
@@ -173,8 +184,9 @@ int GraphLine::ValueToY(double value) const {
 GraphRange GraphLine::CalculateVerticalAutoRange() {
   assert(auto_range());
 
-  if (!plot_ || !data_source_)
+  if (!plot_ || !data_source_) {
     return GraphRange();
+  }
 
   // Get range from screen.
   double x1 = XToValue(0);
@@ -186,20 +198,23 @@ GraphRange GraphLine::CalculateVerticalAutoRange() {
 bool GraphLine::GetNearestPoint(const QPoint& screen_point,
                                 GraphPoint& data_point,
                                 int max_distance) {
-  if (!data_source_)
+  if (!data_source_) {
     return false;
+  }
 
   // get range from screen
   double x1 = XToValue(0);
   double x2 = XToValue(plot().width());
 
   auto point_enum = data_source_->EnumPoints(x1, x2, true, false);
-  if (!point_enum)
+  if (!point_enum) {
     return false;
+  }
 
   GraphPoint point;
-  if (!point_enum->EnumNext(point))
+  if (!point_enum->EnumNext(point)) {
     return false;
+  }
 
   QPoint p(ValueToX(point.x), ValueToY(point.y));
   int min_distance = CalcPointDistance(p, screen_point);
@@ -226,8 +241,9 @@ void GraphLine::AdjustHorizontalRange(GraphRange& range) const {
   {
     auto points =
         data_source_->EnumPoints(range.low(), range.high(), false, false);
-    if (!points || points->GetCount() <= kMaxPoints)
+    if (!points || points->GetCount() <= kMaxPoints) {
       return;
+    }
   }
 
   // Binary search for low bound to keep kMaxPoints points.
@@ -246,16 +262,18 @@ void GraphLine::AdjustHorizontalRange(GraphRange& range) const {
       return;
     }
 
-    if (count < kMaxPoints)
+    if (count < kMaxPoints) {
       max = value;
-    else
+    } else {
       min = value;
+    }
   }
 }
 
 void GraphLine::SetVerticalRangeHelper(const GraphRange& range) {
-  if (vertical_range_ == range)
+  if (vertical_range_ == range) {
     return;
+  }
 
   vertical_range_ = range;
 
@@ -304,14 +322,16 @@ void GraphLine::UpdateVerticalRange() {
                                         : GraphRange{});
 }
 
-void GraphLine::SetColor(QColor color) {
-  if (color_ == color)
+void GraphLine::SetColor(const QColor& color) {
+  if (color_ == color) {
     return;
+  }
 
   color_ = color;
 
-  if (plot_)
+  if (plot_) {
     plot_->update();
+  }
 }
 
 GraphRange GraphLine::GetHorizontalRange() const {

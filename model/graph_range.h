@@ -56,8 +56,9 @@ class GraphRange {
   void Offset(double delta) {
     low_ += delta;
     high_ += delta;
-    if (kind_ == LOGICAL)
+    if (kind_ == LOGICAL) {
       kind_ = LINEAR;
+    }
   }
 
   bool operator==(const GraphRange& other) const = default;
@@ -72,10 +73,11 @@ class GraphRange {
 namespace detail {
 
 inline void PrintBound(std::ostream& os, double bound) {
-  if (bound == kGraphUnknownValue)
+  if (bound == kGraphUnknownValue) {
     os << "unknown";
-  else
+  } else {
     os << bound;
+  }
 }
 
 }  // namespace detail

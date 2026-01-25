@@ -19,7 +19,7 @@ class GraphWidget;
 class GraphPlot : public QWidget {
  public:
   GraphPlot();
-  virtual ~GraphPlot();
+  ~GraphPlot() override;
 
   void Init(Graph* graph,
             GraphPane* pane,
@@ -77,11 +77,11 @@ class GraphPlot : public QWidget {
   void RemoveWidget(GraphWidget& widget);
 
   // View
-  virtual void paintEvent(QPaintEvent* e) override;
-  virtual void mousePressEvent(QMouseEvent* e) override;
-  virtual void mouseReleaseEvent(QMouseEvent* e) override;
-  virtual void mouseMoveEvent(QMouseEvent* e) override;
-  virtual void leaveEvent(QEvent* e) override;
+  void paintEvent(QPaintEvent* e) override;
+  void mousePressEvent(QMouseEvent* e) override;
+  void mouseReleaseEvent(QMouseEvent* e) override;
+  void mouseMoveEvent(QMouseEvent* e) override;
+  void leaveEvent(QEvent* e) override;
   /*virtual bool IsFocusable() const override { return true; }
   virtual bool GetTooltipText(const gfx::Point& point,
                               std::u16string* tooltip) const override;*/

@@ -35,7 +35,7 @@ class Graph : public QFrame {
   };
 
   explicit Graph(QWidget* parent = nullptr);
-  virtual ~Graph();
+  ~Graph() override;
 
   Controller* controller() const { return controller_; }
   void set_controller(Controller* controller) { controller_ = controller; }
@@ -94,15 +94,15 @@ class Graph : public QFrame {
   void AdjustTimeRange(GraphRange& range) const;
 
   // QWidget
-  virtual void mousePressEvent(QMouseEvent* e) override;
+  void mousePressEvent(QMouseEvent* e) override;
 
  private:
   struct ZoomingHistoryItem {
     GraphRange horizontal_range_;
     // If |pane_| is NULL then this pane was removed. Only horizontal range
     // needs to be restored.
-    GraphPane* pane_;
-    bool pane_auto_range_;
+    GraphPane* pane_ = nullptr;
+    bool pane_auto_range_ = false;
     GraphRange pane_range_;
   };
 

@@ -15,7 +15,7 @@ class GraphAxis : public QWidget {
 
  public:
   explicit GraphAxis(QWidget* parent = nullptr);
-  ~GraphAxis();
+  ~GraphAxis() override;
 
   void Init(Graph* graph, GraphPlot* plot, bool is_vertical);
 
@@ -51,12 +51,12 @@ class GraphAxis : public QWidget {
   void InvalidateCursor(const GraphCursor& cursor);
 
   // View
-  virtual void mousePressEvent(QMouseEvent* event) override;
-  virtual void mouseMoveEvent(QMouseEvent* event) override;
-  virtual void mouseReleaseEvent(QMouseEvent* event) override;
-  virtual void paintEvent(QPaintEvent* e) override;
-  virtual void resizeEvent(QResizeEvent* e) override;
-  virtual void contextMenuEvent(QContextMenuEvent* event) override;
+  void mousePressEvent(QMouseEvent* event) override;
+  void mouseMoveEvent(QMouseEvent* event) override;
+  void mouseReleaseEvent(QMouseEvent* event) override;
+  void paintEvent(QPaintEvent* e) override;
+  void resizeEvent(QResizeEvent* e) override;
+  void contextMenuEvent(QContextMenuEvent* event) override;
 
  signals:
   void rangeChanged(const GraphRange& range);
@@ -69,7 +69,7 @@ class GraphAxis : public QWidget {
 
   QString GetLabelForValue(double value) const;
 
-  void PaintTick(QPainter& painter, int pos);
+  void PaintTick(QPainter& painter, int pos) const;
   void PaintLabel(QPainter& painter, int pos, const QString& label);
 
   QRect GetCursorLabelRect(const GraphCursor& cursor) const;

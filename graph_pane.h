@@ -13,7 +13,7 @@ class GraphPlot;
 class GraphPane : public QWidget {
  public:
   explicit GraphPane(QWidget* parent = nullptr);
-  virtual ~GraphPane();
+  ~GraphPane() override;
 
   Graph& graph() const {
     assert(graph_);
@@ -31,8 +31,8 @@ class GraphPane : public QWidget {
   int size_percent_ = 100;
 
   // QWidget
-  virtual void mousePressEvent(QMouseEvent* e) override;
-  virtual void resizeEvent(QResizeEvent* e) override;
+  void mousePressEvent(QMouseEvent* e) override;
+  void resizeEvent(QResizeEvent* e) override;
   // virtual void RequestFocus() override;
 
  private:

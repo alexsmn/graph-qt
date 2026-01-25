@@ -70,8 +70,9 @@ void GraphPlot::AddLine(GraphLine& line) {
 }
 
 void GraphPlot::DeleteLine(GraphLine& line) {
-  if (&line == focus_line_)
+  if (&line == focus_line_) {
     SetFocusPoint(GraphPoint(), nullptr);
+  }
 
   // Delete from list.
   Lines::iterator i = std::find(lines_.begin(), lines_.end(), &line);
@@ -86,8 +87,9 @@ void GraphPlot::DeleteLine(GraphLine& line) {
 }
 
 void GraphPlot::DeleteAllLines() {
-  while (!lines_.empty())
+  while (!lines_.empty()) {
     DeleteLine(*lines_.back());
+  }
 
   update();
   vertical_axis().update();
@@ -105,8 +107,9 @@ void GraphPlot::paintEvent(QPaintEvent* e) {
   // draw lines
   {
     QRect local_bounds(0, 0, width(), height());
-    for (Lines::const_iterator i = lines_.begin(); i != lines_.end(); ++i)
+    for (Lines::const_iterator i = lines_.begin(); i != lines_.end(); ++i) {
       (*i)->Draw(painter, local_bounds);
+    }
   }
 
   // Draw horizontal cursors.
@@ -138,8 +141,9 @@ void GraphPlot::paintEvent(QPaintEvent* e) {
 void GraphPlot::PaintHorizontalGrid(QPainter& painter) {
   assert(graph_);
 
-  if (vertical_axis_->range().empty())
+  if (vertical_axis_->range().empty()) {
     return;
+  }
 
   painter.save();
   painter.setPen(graph_->grid_pen_);
@@ -162,8 +166,9 @@ void GraphPlot::mousePressEvent(QMouseEvent* e) {
 
   setFocus(Qt::MouseFocusReason);
 
-  if (!(e->buttons() & Qt::LeftButton))
+  if (!(e->buttons() & Qt::LeftButton)) {
     return;
+  }
 
   down_point_ = last_point_ = e->pos();
   state_ = STATE_MOUSE_DOWN;
@@ -175,10 +180,11 @@ void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
   auto delta = e->pos() - last_point_;
 
   if (state_ == STATE_MOUSE_DOWN && down_point_ != e->pos()) {
-    if (zooming_)
+    if (zooming_) {
       state_ = STATE_ZOOMING;
-    else
+    } else {
       state_ = STATE_PANNING;
+    }
   }
 
   switch (state_) {
@@ -217,8 +223,9 @@ void GraphPlot::mouseMoveEvent(QMouseEvent* e) {
           clear_focus = false;
         }
       }
-      if (clear_focus)
+      if (clear_focus) {
         SetFocusPoint(GraphPoint(), nullptr);
+      }
       return;
     }
   }
@@ -290,24 +297,27 @@ void GraphPlot::InvalidateCursor(const GraphCursor& cursor) {
 }
 
 void GraphPlot::PaintCursor(QPainter& painter, const GraphCursor& cursor) {
-  if (!cursor.axis_->range().Contains(cursor.position_))
+  if (!cursor.axis_->range().Contains(cursor.position_)) {
     return;
+  }
 
   painter.save();
   painter.setPen(QPen(Qt::black));
 
   int pos = cursor.axis_->ConvertValueToScreen(cursor.position_);
-  if (cursor.axis_->is_vertical())
+  if (cursor.axis_->is_vertical()) {
     painter.drawLine(0, pos, width(), pos);
-  else
+  } else {
     painter.drawLine(pos, 0, pos, height());
+  }
 
   painter.restore();
 }
 
 void GraphPlot::PaintVerticalGrid(QPainter& painter) {
-  if (horizontal_axis_->range().empty())
+  if (horizontal_axis_->range().empty()) {
     return;
+  }
 
   painter.save();
   painter.setPen(graph_->grid_pen_);
@@ -327,8 +337,9 @@ void GraphPlot::PaintVerticalGrid(QPainter& painter) {
 }
 
 void GraphPlot::SetFocusPoint(const GraphPoint& point, GraphLine* line) {
-  if (focus_line_ == line && focus_point_ == point)
+  if (focus_line_ == line && focus_point_ == point) {
     return;
+  }
 
   InvalidateFocusPoint();
 
@@ -349,8 +360,9 @@ void GraphPlot::SetFocusPoint(const GraphPoint& point, GraphLine* line) {
 }
 
 void GraphPlot::InvalidateFocusPoint() {
-  if (!focus_line_)
+  if (!focus_line_) {
     return;
+  }
 
   QPoint p(focus_line_->ValueToX(focus_point_.x),
            focus_line_->ValueToY(focus_point_.y));

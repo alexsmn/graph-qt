@@ -28,22 +28,27 @@ void GraphWidget::Move(const QPoint& delta) {
   left += delta.x();
   top += delta.y();
 
-  if (left + width() >= pane_.width())
+  if (left + width() >= pane_.width()) {
     left = pane_.width() - width();
-  if (top + height() >= pane_.height())
+  }
+  if (top + height() >= pane_.height()) {
     top = pane_.height() - height();
+  }
 
-  if (left < 0)
+  if (left < 0) {
     left = 0;
-  if (top < 0)
+  }
+  if (top < 0) {
     top = 0;
+  }
 
   setGeometry(left, top, width(), height());
 }
 
 void GraphWidget::mousePressEvent(QMouseEvent* e) {
-  if (!(e->buttons() & Qt::LeftButton))
+  if (!(e->buttons() & Qt::LeftButton)) {
     return;
+  }
 
   last_point_ = e->globalPos();
   e->accept();
