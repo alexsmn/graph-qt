@@ -12,11 +12,11 @@ Qt5-based graphing widget library for displaying time-series data with interacti
 
 - CMake 3.26+
 - Visual Studio 2022 or later
-- Qt 5.15.x (msvc2019 build)
+- Qt 5.15.x (msvc2019 for x86, msvc2019_64 for x64)
 - vcpkg with packages:
-  - `gtest:x86-windows`
-  - `icu:x86-windows`
-- [ChromiumBase](https://github.com/user/chromebase) library
+  - x86: `gtest:x86-windows`, `icu:x86-windows`
+  - x64: `gtest:x64-windows`, `icu:x64-windows`
+- [ChromiumBase](https://github.com/alexsmn/chromebase) library
 
 ## Build
 
@@ -24,19 +24,43 @@ Qt5-based graphing widget library for displaying time-series data with interacti
    - `CMAKE_TOOLCHAIN_FILE` - path to vcpkg toolchain
    - `CMAKE_MODULE_PATH` - path to ChromiumBase
    - `CMAKE_PREFIX_PATH` - path to Qt installation
+   - `CMAKE_MAKE_PROGRAM` - path to Ninja (for Ninja presets)
 
-1. Configure and build:
+### Visual Studio Generator
 
 ```batch
 cmake --preset windows-x86-debug
 cmake --build --preset windows-x86-debug
-```
-
-1. Run tests:
-
-```batch
 ctest --preset windows-x86-debug
 ```
+
+### Ninja Multi-Config (faster builds)
+
+Ninja builds require running from a Visual Studio Developer Command Prompt or PowerShell with the VS environment loaded.
+
+**From VS Developer PowerShell:**
+
+```powershell
+# x86 build
+Import-Module "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+Enter-VsDevShell -VsInstallPath "C:\Program Files\Microsoft Visual Studio\18\Community" -Arch x86
+cmake --preset ninja-x86
+cmake --build --preset ninja-x86-debug
+ctest --preset ninja-x86-debug
+
+# x64 build
+Enter-VsDevShell -VsInstallPath "C:\Program Files\Microsoft Visual Studio\18\Community" -Arch amd64
+cmake --preset ninja-x64
+cmake --build --preset ninja-x64-debug
+ctest --preset ninja-x64-debug
+```
+
+**Available Ninja presets:**
+
+| Configure | Build | Test |
+|-----------|-------|------|
+| `ninja-x86` | `ninja-x86-debug`, `ninja-x86-release` | `ninja-x86-debug`, `ninja-x86-release` |
+| `ninja-x64` | `ninja-x64-debug`, `ninja-x64-release` | `ninja-x64-debug`, `ninja-x64-release` |
 
 ## Static Analysis (clang-tidy)
 
