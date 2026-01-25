@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  lint-linux:
+  lint-linux-x64:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,6 +30,7 @@ jobs:
           cmake -B build -G Ninja \
             -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+            -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
             -DCMAKE_MODULE_PATH="${{ github.workspace }}/chromebase"
 
       - name: Run clang-tidy
@@ -37,7 +38,7 @@ jobs:
           run-clang-tidy -p build -header-filter='graph_qt/.*' \
             $(find . -name '*.cpp' -not -path './build/*')
 
-  build-linux:
+  build-linux-x64:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -59,6 +60,7 @@ jobs:
         run: |
           cmake -B build -G Ninja \
             -DCMAKE_CXX_COMPILER=clang++ \
+            -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
             -DCMAKE_MODULE_PATH="${{ github.workspace }}/chromebase"
 
       - name: Build
