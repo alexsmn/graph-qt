@@ -13,10 +13,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Checkout ChromiumBase
-        uses: actions/checkout@v4
-        with:
-          repository: alexsmn/chromebase
-          path: chromebase
+        run: git clone https://github.com/alexsmn/chromebase.git chromebase
 
       - name: Install dependencies
         run: |
@@ -42,10 +39,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Checkout ChromiumBase
-        uses: actions/checkout@v4
-        with:
-          repository: alexsmn/chromebase
-          path: chromebase
+        run: git clone https://github.com/alexsmn/chromebase.git chromebase
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
