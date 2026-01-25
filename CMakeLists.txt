@@ -2,16 +2,6 @@ cmake_minimum_required(VERSION 3.26)
 
 project(graph_qt)
 
-option(CLANG_TIDY "Enable clang-tidy analysis" OFF)
-if(CLANG_TIDY)
-  find_program(CLANG_TIDY_EXE clang-tidy)
-  if(CLANG_TIDY_EXE)
-    set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}")
-  else()
-    message(WARNING "clang-tidy requested but not found")
-  endif()
-endif()
-
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 enable_testing()

@@ -25,14 +25,14 @@ Qt5-based graphing widget library for displaying time-series data with interacti
    - `CMAKE_MODULE_PATH` - path to ChromiumBase
    - `CMAKE_PREFIX_PATH` - path to Qt installation
 
-2. Configure and build:
+1. Configure and build:
 
 ```batch
 cmake --preset windows-x86-debug
 cmake --build --preset windows-x86-debug
 ```
 
-3. Run tests:
+1. Run tests:
 
 ```batch
 ctest --preset windows-x86-debug
@@ -40,31 +40,18 @@ ctest --preset windows-x86-debug
 
 ## Static Analysis (clang-tidy)
 
-The project includes a `.clang-tidy` configuration for static analysis.
-
-**Requirements:** LLVM/Clang toolchain with `clang-tidy` ([LLVM releases](https://releases.llvm.org/)) in PATH.
+The project includes a `.clang-tidy` configuration for static analysis. Use the clang-tidy bundled with Visual Studio.
 
 ### Running clang-tidy
 
-**Option 1: CMake integration** (runs during build)
+Run clang-tidy on source files using the VS bundled LLVM (adjust edition: Community/Professional/Enterprise):
 
 ```batch
-cmake --preset windows-x86-debug -DCLANG_TIDY=ON
-cmake --build --preset windows-x86-debug
+"C:\Program Files\Microsoft Visual Studio\18\Community\VC\Tools\Llvm\bin\clang-tidy.exe" ^
+  -p build-windows graph_line.cpp
 ```
 
-**Option 2: Direct invocation** (requires compile_commands.json)
-
-```bash
-# Generate compilation database (use Ninja generator)
-cmake -B build -G Ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON ...
-
-# Run on all source files
-run-clang-tidy -p build -header-filter='graph_qt/.*'
-
-# Run on a single file
-clang-tidy -p build graph_line.cpp
-```
+The CI lint job runs clang-tidy automatically on Ubuntu.
 
 ## Outputs
 
