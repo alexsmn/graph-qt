@@ -12,6 +12,7 @@
 #include <QDateTime>
 #include <QMouseEvent>
 #include <QPainter>
+#include <iterator>
 
 namespace views {
 
@@ -50,15 +51,15 @@ double EstimateTimeTickStep(double scale, int min) {
       4 * GraphTimeHelper::hour,   6 * GraphTimeHelper::hour,
       12 * GraphTimeHelper::hour,  GraphTimeHelper::day};
   if (scale <= 0) {
-    return times[_countof(times) - 1];
+    return times[std::size(times) - 1];
   }
-  for (int i = 0; i < _countof(times); i++) {
+  for (int i = 0; i < std::size(times); i++) {
     int sx = static_cast<int>(times[i] * scale);
     if (sx >= min) {
       return times[i];
     }
   }
-  return times[_countof(times) - 1];
+  return times[std::size(times) - 1];
 }
 
 void Inset(QRect& rect, int left, int top, int right, int bottom) {
@@ -174,7 +175,7 @@ void GraphAxis::PaintTick(QPainter& painter, int pos) const {
   }
 }
 
-void GraphAxis::PaintLabel(QPainter& painter, int pos, const QString& label) {
+void GraphAxis::PaintLabel(QPainter& painter, int pos, const QString& label) const {
   if (is_vertical_) {
     QRect bounds(5, pos, 0, 0);
     painter.drawText(
@@ -358,8 +359,9 @@ void GraphAxis::mouseMoveEvent(QMouseEvent* event) {
       graph_->AdjustTimeRange(range);
       SetRange(range);
 
-      if (graph_->controller())
+      if (graph_->controller()) {
         graph_->controller()->OnGraphModified();
+      }
     }
 
     last_point_ = event->pos();
@@ -377,8 +379,9 @@ void GraphAxis::mouseMoveEvent(QMouseEvent* event) {
 void GraphAxis::mouseReleaseEvent(QMouseEvent* event) {
   assert(graph_);
 
-  if (event->button() != Qt::LeftButton)
+  if (event->button() != Qt::LeftButton) {
     return;
+  }
 
   if (!moved_) {
     double position =
@@ -391,8 +394,9 @@ void GraphAxis::mouseReleaseEvent(QMouseEvent* event) {
 void GraphAxis::contextMenuEvent(QContextMenuEvent* event) {
   assert(graph_);
 
-  if (!ignore_context_menu_)
+  if (!ignore_context_menu_) {
     QWidget::contextMenuEvent(event);
+  }
 }
 
 const GraphCursor* GraphAxis::GetCursorLabelAt(QPoint point) const {
@@ -435,8 +439,9 @@ void GraphAxis::InvalidateCurrentValue(double value) {
 
 void GraphAxis::UpdateRange() {
   const GraphPlot::Lines& lines = plot_->lines();
-  if (lines.empty())
+  if (lines.empty()) {
     return;
+  }
 
   double low = kGraphUnknownValue;
   double high = kGraphUnknownValue;
@@ -456,13 +461,15 @@ void GraphAxis::UpdateRange() {
     logical &= line_range.kind() == GraphRange::LOGICAL;
 
     if (line_range.low() != kGraphUnknownValue) {
-      if (low == kGraphUnknownValue || line_range.low() < low)
+      if (low == kGraphUnknownValue || line_range.low() < low) {
         low = line_range.low();
+      }
     }
 
     if (line_range.high() != kGraphUnknownValue) {
-      if (high == kGraphUnknownValue || line_range.high() > high)
+      if (high == kGraphUnknownValue || line_range.high() > high) {
         high = line_range.high();
+      }
     }
   }
 
@@ -470,14 +477,16 @@ void GraphAxis::UpdateRange() {
 }
 
 void GraphAxis::SetRange(const GraphRange& range) {
-  if (range_ == range)
+  if (range_ == range) {
     return;
+  }
 
   auto adjusted_range = range;
   graph_->AdjustTimeRange(adjusted_range);
 
-  if (range_ == adjusted_range)
+  if (range_ == adjusted_range) {
     return;
+  }
 
   range_ = adjusted_range;
 

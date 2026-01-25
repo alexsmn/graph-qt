@@ -3,6 +3,7 @@
 #include "graph_qt/model/graph_range.h"
 
 #include <QString>
+#include <memory>
 
 namespace views {
 

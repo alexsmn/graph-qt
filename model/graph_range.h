@@ -3,6 +3,7 @@
 #include "graph_qt/model/graph_types.h"
 
 #include <cassert>
+#include <cmath>
 #include <ostream>
 
 namespace views {

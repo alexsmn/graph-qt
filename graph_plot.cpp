@@ -148,7 +148,8 @@ void GraphPlot::PaintHorizontalGrid(QPainter& painter) {
   painter.save();
   painter.setPen(graph_->grid_pen_);
 
-  double first_value, last_value;
+  double first_value = 0.0;
+  double last_value = 0.0;
   vertical_axis_->GetTickValues(first_value, last_value);
 
   double grid_step = vertical_axis_->tick_step();
@@ -322,7 +323,8 @@ void GraphPlot::PaintVerticalGrid(QPainter& painter) {
   painter.save();
   painter.setPen(graph_->grid_pen_);
 
-  double first_value, last_value;
+  double first_value = 0.0;
+  double last_value = 0.0;
   horizontal_axis().GetTickValues(first_value, last_value);
 
   double grid_step = horizontal_axis().tick_step() / 2;

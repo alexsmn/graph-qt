@@ -8,6 +8,7 @@
 namespace views {
 
 class Graph;
+class GraphLine;
 class GraphPlot;
 
 class GraphAxis : public QWidget {
@@ -70,7 +71,7 @@ class GraphAxis : public QWidget {
   QString GetLabelForValue(double value) const;
 
   void PaintTick(QPainter& painter, int pos) const;
-  void PaintLabel(QPainter& painter, int pos, const QString& label);
+  void PaintLabel(QPainter& painter, int pos, const QString& label) const;
 
   QRect GetCursorLabelRect(const GraphCursor& cursor) const;
   const GraphCursor* GetCursorLabelAt(QPoint point) const;

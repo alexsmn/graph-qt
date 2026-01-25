@@ -1,6 +1,5 @@
 #include "graph_qt/graph_line.h"
 
-#include "base/win/scoped_gdi_object.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_axis.h"
 #include "graph_qt/graph_plot.h"
