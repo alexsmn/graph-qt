@@ -8,6 +8,8 @@ Do not commit changes automatically. Wait for explicit user request before creat
 
 Do not commit directly to main. Create GitHub pull requests instead.
 
+Before creating or updating a PR, build and test locally.
+
 ## Build Commands
 
 ```batch
