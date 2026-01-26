@@ -15,7 +15,6 @@ Qt5-based graphing widget library for displaying time-series data with interacti
 - Ninja (for Ninja presets)
 - Qt 5.15.x (msvc2019 for x86, msvc2019_64 for x64)
 - vcpkg (dependencies listed in `vcpkg.json`)
-- [ChromiumBase](https://github.com/alexsmn/chromebase) library
 
 ## Build
 
