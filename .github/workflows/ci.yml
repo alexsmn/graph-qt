@@ -62,9 +62,9 @@ jobs:
       # platform-specific font rendering and widget appearance.
       - name: Test
         id: test
-        run: ctest --test-dir build --output-on-failure -E Rendering
+        run: ctest --test-dir build --output-on-failure
         env:
-          QT_QPA_PLATFORM: offscreen
+          GTEST_FILTER: "-*Rendering*"
 
       - name: Upload test artifacts
         if: failure() && steps.test.outcome == 'failure'
