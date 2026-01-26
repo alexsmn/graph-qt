@@ -1,8 +1,5 @@
 #include "graph_qt/graph.h"
 
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/time/time.h"
 #include "graph_qt/graph_axis.h"
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"

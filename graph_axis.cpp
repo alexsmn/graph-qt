@@ -1,7 +1,5 @@
 #include "graph_qt/graph_axis.h"
 
-#include "base/auto_reset.h"
-#include "base/time/time.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_line.h"
 #include "graph_qt/graph_pane.h"
@@ -12,6 +10,7 @@
 #include <QDateTime>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QScopedValueRollback>
 #include <iterator>
 
 namespace views {
@@ -80,7 +79,7 @@ QString GetTimeAxisLabel(double val, double tick_step) {
   static const double kDayStep = 24 * kHourStep;
 
   auto date_time =
-      QDateTime::fromMSecsSinceEpoch(base::Time::FromDoubleT(val).ToJavaTime());
+      QDateTime::fromMSecsSinceEpoch(static_cast<qint64>(val * 1000));
 
   if (tick_step >= kDayStep) {
     return date_time.toString("d MMM");
@@ -523,7 +522,7 @@ void GraphAxis::Fit() {
     range = scroll_range_.high_subrange(range.delta());
   }
 
-  base::AutoReset updating{&time_fit_updating_, true};
+  QScopedValueRollback<bool> updating(time_fit_updating_, true);
   SetRange(range);
 }
 

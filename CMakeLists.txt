@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.26)
 
 project(graph_qt)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 find_package(Qt5 COMPONENTS Widgets REQUIRED)
 
 enable_testing()
@@ -29,10 +32,7 @@ add_library(graph_qt STATIC
   test/test_data_source.h
 )
 
-find_package(ChromiumBase REQUIRED)
-
 target_link_libraries(graph_qt
-  ChromiumBase::base
   Qt5::Widgets
   graph_qt_model
 )

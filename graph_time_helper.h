@@ -1,8 +1,8 @@
 #pragma once
 
-#include "base/time/time.h"
 #include "graph_qt/model/graph_types.h"
 
+#include <QDateTime>
 #include <chrono>
 
 namespace views {
@@ -19,12 +19,15 @@ class GraphTimeHelper {
   GraphTimeHelper();
 };
 
-inline GraphValue ValueFromTime(base::Time time) {
-  return time.ToDoubleT();
+// Converts QDateTime to graph value (Unix timestamp in seconds).
+inline GraphValue ValueFromTime(const QDateTime& time) {
+  return time.toMSecsSinceEpoch() / 1000.0;
 }
 
-inline GraphValue ValueFromDuration(base::TimeDelta duration) {
-  return duration.InSecondsF();
+// Converts std::chrono::duration to graph value (seconds).
+template <typename Rep, typename Period>
+inline GraphValue ValueFromDuration(std::chrono::duration<Rep, Period> duration) {
+  return std::chrono::duration<double>(duration).count();
 }
 
 }  // namespace views

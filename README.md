@@ -15,13 +15,11 @@ Qt5-based graphing widget library for displaying time-series data with interacti
 - Ninja (for Ninja presets)
 - Qt 5.15.x (msvc2019 for x86, msvc2019_64 for x64)
 - vcpkg (dependencies listed in `vcpkg.json`)
-- [ChromiumBase](https://github.com/alexsmn/chromebase) library
 
 ## Build
 
 1. Copy `CMakeUserPresets.json.example` to `CMakeUserPresets.json` and update the paths for your system:
    - `CMAKE_TOOLCHAIN_FILE` - path to vcpkg toolchain
-   - `CMAKE_MODULE_PATH` - path to ChromiumBase
    - `CMAKE_PREFIX_PATH` - path to Qt installation
    - `CMAKE_MAKE_PROGRAM` - path to Ninja (for Ninja presets)
 
