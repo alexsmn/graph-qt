@@ -59,9 +59,17 @@ jobs:
         run: cmake --build build
 
       - name: Test
+        id: test
         run: ctest --test-dir build --output-on-failure
         env:
           QT_QPA_PLATFORM: offscreen
+
+      - name: Upload test artifacts
+        if: failure() && steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-images-linux-x64
+          path: graph_qt/testdata/*.png
 
   build-windows-x86:
     runs-on: windows-latest
@@ -96,7 +104,15 @@ jobs:
         run: cmake --build --preset ninja-x86-debug
 
       - name: Test
+        id: test
         run: ctest --preset ninja-x86-debug
+
+      - name: Upload test artifacts
+        if: failure() && steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-images-windows-x86
+          path: testdata/*.png
 
   build-windows-x64:
     runs-on: windows-latest
@@ -131,4 +147,12 @@ jobs:
         run: cmake --build --preset ninja-x64-debug
 
       - name: Test
+        id: test
         run: ctest --preset ninja-x64-debug
+
+      - name: Upload test artifacts
+        if: failure() && steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-images-windows-x64
+          path: testdata/*.png
