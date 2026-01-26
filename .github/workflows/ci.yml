@@ -76,9 +76,14 @@ jobs:
 
   build-windows-x86:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: graph_qt
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: graph_qt
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
@@ -115,13 +120,18 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-images-windows-x86
-          path: testdata/*.png
+          path: graph_qt/testdata/*.png
 
   build-windows-x64:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: graph_qt
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: graph_qt
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
@@ -158,4 +168,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-images-windows-x64
-          path: testdata/*.png
+          path: graph_qt/testdata/*.png
