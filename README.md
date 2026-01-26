@@ -12,10 +12,9 @@ Qt5-based graphing widget library for displaying time-series data with interacti
 
 - CMake 3.26+
 - Visual Studio 2022 or later
+- Ninja (for Ninja presets)
 - Qt 5.15.x (msvc2019 for x86, msvc2019_64 for x64)
-- vcpkg with packages:
-  - x86: `gtest:x86-windows`, `icu:x86-windows`
-  - x64: `gtest:x64-windows`, `icu:x64-windows`
+- vcpkg (dependencies listed in `vcpkg.json`)
 - [ChromiumBase](https://github.com/alexsmn/chromebase) library
 
 ## Build

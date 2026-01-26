@@ -1,4 +1,7 @@
+/build-ninja-x64
+/build-ninja-x86
 /build-windows
 CMakeUserPresets.json
 .claude/settings.local.json
 .vscode/
+nul

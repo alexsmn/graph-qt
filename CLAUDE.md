@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Do not commit changes automatically. Wait for explicit user request before creating commits.
 
+Do not commit directly to main. Create GitHub pull requests instead.
+
 ## Build Commands
 
 ```batch
