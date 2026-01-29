@@ -1,9 +1,9 @@
 #include "graph_qt/horizontal_scroll_bar_controller.h"
 
-#include "base/auto_reset.h"
 #include "graph_qt/graph_axis.h"
 
 #include <QScrollBar>
+#include <QScopedValueRollback>
 
 namespace views {
 
@@ -47,7 +47,7 @@ void HorizontalScrollBarController::SetScrollRange(const GraphRange& range) {
 
   scroll_range_ = range;
 
-  base::AutoReset updating{&updating_, true};
+  QScopedValueRollback<bool> updating(updating_, true);
 
   auto view_range = axis_.range();
   if (view_range.empty() || scroll_range_.empty()) {
@@ -71,7 +71,7 @@ void HorizontalScrollBarController::OnScroll(int pos) {
     return;
   }
 
-  base::AutoReset updating{&updating_, true};
+  QScopedValueRollback<bool> updating(updating_, true);
   axis_.SetRange(view_range);
 }
 
@@ -92,7 +92,7 @@ void HorizontalScrollBarController::OnViewRangeChanged() {
     return;
   }
 
-  base::AutoReset updating{&updating_, true};
+  QScopedValueRollback<bool> updating(updating_, true);
 
   int pos = CalculateScrollPos();
   scroll_bar_.setValue(pos);

@@ -17,9 +17,6 @@ jobs:
         with:
           path: graph_qt
 
-      - name: Checkout ChromiumBase
-        run: git clone https://github.com/alexsmn/chromebase.git ../chromebase
-
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -30,8 +27,7 @@ jobs:
           cmake -B build -G Ninja \
             -DCMAKE_CXX_COMPILER=clang++ \
             -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
-            -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
-            -DCMAKE_MODULE_PATH="${{ github.workspace }}/chromebase"
+            -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
 
       - name: Run clang-tidy
         run: |
@@ -48,9 +44,6 @@ jobs:
         with:
           path: graph_qt
 
-      - name: Checkout ChromiumBase
-        run: git clone https://github.com/alexsmn/chromebase.git ../chromebase
-
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -60,23 +53,37 @@ jobs:
         run: |
           cmake -B build -G Ninja \
             -DCMAKE_CXX_COMPILER=clang++ \
-            -DCMAKE_CXX_SCAN_FOR_MODULES=OFF \
-            -DCMAKE_MODULE_PATH="${{ github.workspace }}/chromebase"
+            -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
 
       - name: Build
         run: cmake --build build
 
+      # Exclude rendering tests on Linux - they produce different output due to
+      # platform-specific font rendering and widget appearance.
       - name: Test
+        id: test
         run: ctest --test-dir build --output-on-failure
+        env:
+          QT_QPA_PLATFORM: offscreen
+          GTEST_FILTER: "-*Rendering*"
+
+      - name: Upload test artifacts
+        if: failure() && steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-images-linux-x64
+          path: graph_qt/testdata/*.png
 
   build-windows-x86:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: graph_qt
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Checkout ChromiumBase
-        run: git clone https://github.com/alexsmn/chromebase.git chromebase
+        with:
+          path: graph_qt
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
@@ -89,30 +96,42 @@ jobs:
           version: '5.15.2'
           arch: 'win32_msvc2019'
 
-      - name: Install vcpkg packages
-        run: '& "${env:VCPKG_ROOT}/vcpkg" install gtest:x86-windows icu:x86-windows'
+      - name: Setup MSVC x86
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x86
 
       - name: Configure
         run: |
-          cmake -B build -G "Visual Studio 17 2022" -A Win32 `
-            -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" `
-            -DCMAKE_MODULE_PATH="${{ github.workspace }}/chromebase" `
-            -DCMAKE_PREFIX_PATH="${env:Qt5_DIR}"
+          cmake --preset ninja-x86 `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DCMAKE_PREFIX_PATH="$env:Qt5_DIR" `
+            -DVCPKG_TARGET_TRIPLET=x86-windows
 
       - name: Build
-        run: cmake --build build --config Debug
+        run: cmake --build --preset ninja-x86-debug
 
       - name: Test
-        run: ctest --test-dir build --config Debug --output-on-failure
+        id: test
+        run: ctest --preset ninja-x86-debug
+
+      - name: Upload test artifacts
+        if: failure() && steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-images-windows-x86
+          path: graph_qt/testdata/*.png
 
   build-windows-x64:
     runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: graph_qt
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Checkout ChromiumBase
-        run: git clone https://github.com/alexsmn/chromebase.git chromebase
+        with:
+          path: graph_qt
 
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
@@ -125,18 +144,28 @@ jobs:
           version: '5.15.2'
           arch: 'win64_msvc2019_64'
 
-      - name: Install vcpkg packages
-        run: '& "${env:VCPKG_ROOT}/vcpkg" install gtest:x64-windows icu:x64-windows'
+      - name: Setup MSVC x64
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
 
       - name: Configure
         run: |
-          cmake -B build -G "Visual Studio 17 2022" -A x64 `
-            -DCMAKE_TOOLCHAIN_FILE="${env:VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" `
-            -DCMAKE_MODULE_PATH="${{ github.workspace }}/chromebase" `
-            -DCMAKE_PREFIX_PATH="${env:Qt5_DIR}"
+          cmake --preset ninja-x64 `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DCMAKE_PREFIX_PATH="$env:Qt5_DIR" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows
 
       - name: Build
-        run: cmake --build build --config Debug
+        run: cmake --build --preset ninja-x64-debug
 
       - name: Test
-        run: ctest --test-dir build --config Debug --output-on-failure
+        id: test
+        run: ctest --preset ninja-x64-debug
+
+      - name: Upload test artifacts
+        if: failure() && steps.test.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-images-windows-x64
+          path: graph_qt/testdata/*.png

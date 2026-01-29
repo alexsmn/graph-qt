@@ -1,7 +1,5 @@
 #include "graph_qt/graph_plot.h"
 
-#include "base/strings/stringprintf.h"
-#include "base/strings/sys_string_conversions.h"
 #include "graph_qt/graph.h"
 #include "graph_qt/graph_axis.h"
 #include "graph_qt/graph_line.h"

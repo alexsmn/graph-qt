@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "graph-qt",
+  "version": "1.0.0",
+  "description": "Qt5-based graphing library",
+  "builtin-baseline": "74e6536215718009aae747d86d84b78376bf9e09",
+  "dependencies": [
+    {
+      "name": "qtbase",
+      "default-features": false,
+      "features": ["widgets"]
+    },
+    "gtest"
+  ]
+}

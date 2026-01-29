@@ -12,6 +12,7 @@
 #include <QScrollBar>
 #include <QTimer>
 #include <QToolBar>
+#include <chrono>
 #include <vector>
 
 using namespace views;
@@ -49,16 +50,17 @@ class UpdatingTimeDataSource : public VirtualDataSource {
   }
 
  private:
+  static constexpr auto kStep = std::chrono::seconds(1);
+  static constexpr auto kRange = std::chrono::hours(365 * 24);
+
   VirtualDataset dataset_{
-      .horizontal_min_ = ValueFromTime(base::Time::Now() - kRange),
+      .horizontal_min_ = ValueFromTime(QDateTime::currentDateTime().addSecs(
+          -std::chrono::duration_cast<std::chrono::seconds>(kRange).count())),
       .step_ = ValueFromDuration(kStep),
       .count_ = static_cast<size_t>(kRange / kStep),
       .ramp_count_ = 100};
 
   QTimer timer_;
-
-  inline static const base::TimeDelta kStep = base::TimeDelta::FromSeconds(1);
-  inline static const base::TimeDelta kRange = base::TimeDelta::FromDays(365);
 };
 
 int main(int argc, char** argv) {
