@@ -7,6 +7,7 @@
 #include "graph_qt/graph_widget.h"
 #include "graph_qt/horizontal_scroll_bar_controller.h"
 
+#include <QEvent>
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QPainter>
@@ -15,19 +16,46 @@
 #include <QVBoxLayout>
 #include <algorithm>
 #include <cfloat>
+#include <cmath>
 
 namespace views {
+
+namespace {
+
+double RelativeLuminance(const QColor& color) {
+  auto channel = [](int value) {
+    const double c = value / 255.0;
+    return c <= 0.03928 ? c / 12.92 : std::pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * channel(color.red()) + 0.7152 * channel(color.green()) +
+         0.0722 * channel(color.blue());
+}
+
+QColor Blend(QColor foreground, QColor background, double foreground_alpha) {
+  foreground_alpha = std::clamp(foreground_alpha, 0.0, 1.0);
+  const double background_alpha = 1.0 - foreground_alpha;
+  return QColor{
+      static_cast<int>(std::round(foreground.red() * foreground_alpha +
+                                  background.red() * background_alpha)),
+      static_cast<int>(std::round(foreground.green() * foreground_alpha +
+                                  background.green() * background_alpha)),
+      static_cast<int>(std::round(foreground.blue() * foreground_alpha +
+                                  background.blue() * background_alpha))};
+}
+
+}  // namespace
 
 // Graph
 
 Graph::Graph(QWidget* parent) : QFrame{parent} {
   setLayout(new QVBoxLayout);
-  layout()->setMargin(0);
+  layout()->setContentsMargins(0, 0, 0, 0);
   layout()->setSpacing(0);
 
   splitter_ = new QSplitter{this};
   splitter_->setOrientation(Qt::Vertical);
   splitter_->setHandleWidth(0);
+  InstallActivationFilter(*splitter_);
   layout()->addWidget(splitter_);
 
   // The bottom layout row under the panes. It contains both the horizontal axis
@@ -41,6 +69,7 @@ Graph::Graph(QWidget* parent) : QFrame{parent} {
   horizontal_axis_ = new GraphAxis{this};
   horizontal_axis_->Init(this, nullptr, false);
   horizontal_axis_->setMinimumHeight(kHorizontalAxisHeight);
+  InstallActivationFilter(*horizontal_axis_);
   bottom_layout->addWidget(horizontal_axis_);
 
   QObject::connect(horizontal_axis_, &GraphAxis::rangeChanged, this,
@@ -55,6 +84,7 @@ Graph::Graph(QWidget* parent) : QFrame{parent} {
   horizontal_scroll_bar->setOrientation(Qt::Horizontal);
   horizontal_scroll_bar->setRange(0, 0);
   horizontal_scroll_bar->setStyleSheet("background-color: none;");
+  InstallActivationFilter(*horizontal_scroll_bar);
   bottom_layout->addWidget(horizontal_scroll_bar);
 
   horizontal_scroll_bar_controller_ =
@@ -73,7 +103,17 @@ Graph::~Graph() {
   DeleteAllPanes();
 }
 
+bool Graph::eventFilter(QObject* object, QEvent* event) {
+  if (event->type() == QEvent::MouseButtonPress) {
+    NotifyActivated(*event);
+  }
+
+  return QFrame::eventFilter(object, event);
+}
+
 void Graph::mousePressEvent(QMouseEvent* e) {
+  NotifyActivated(*e);
+
   if (e->button() == Qt::RightButton) {
     // delete selected cursor
     if (selected_cursor_) {
@@ -258,6 +298,35 @@ QString Graph::GetCursorLabel(const GraphCursor& cursor) const {
   }
 }
 
+QColor Graph::background_color() const {
+  return palette().color(backgroundRole());
+}
+
+QColor Graph::text_color() const {
+  return ContrastTextColor(background_color());
+}
+
+QPen Graph::grid_pen() const {
+  return QPen{Blend(text_color(), background_color(), 0.22)};
+}
+
+QColor Graph::cursor_color() const {
+  return text_color();
+}
+
+QColor Graph::selected_cursor_color() const {
+  return Blend(text_color(), background_color(), 0.55);
+}
+
+QColor Graph::cursor_label_text_color(const QColor& background) const {
+  return ContrastTextColor(background);
+}
+
+QColor Graph::ContrastTextColor(const QColor& background) {
+  return RelativeLuminance(background) < 0.45 ? QColor{245, 245, 245}
+                                              : QColor{25, 25, 25};
+}
+
 QString Graph::GetXAxisLabel(double val) const {
   if (horizontal_axis_->range().kind() == GraphRange::TIME) {
     return GetTimeAxisLabel(val, horizontal_axis_->tick_step());
@@ -274,8 +343,27 @@ GraphPane* Graph::AddPane() {
 void Graph::AddPane(GraphPane& pane) {
   pane.Init(*this);
   pane.setParent(this);
+  InstallActivationFilter(pane);
+  InstallActivationFilter(pane.plot());
+  InstallActivationFilter(pane.vertical_axis());
   panes_.push_back(&pane);
   splitter_->addWidget(&pane);
+}
+
+void Graph::NotifyActivated(const QEvent& event) {
+  if (&event == last_activation_event_) {
+    return;
+  }
+
+  last_activation_event_ = &event;
+
+  if (controller_) {
+    controller_->OnGraphActivated();
+  }
+}
+
+void Graph::InstallActivationFilter(QWidget& widget) {
+  widget.installEventFilter(this);
 }
 
 void Graph::DeleteAllPanes() {

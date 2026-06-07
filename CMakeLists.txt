@@ -5,7 +5,7 @@ project(graph_qt)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
 enable_testing()
 find_package(GTest REQUIRED)
@@ -33,7 +33,7 @@ add_library(graph_qt STATIC
 )
 
 target_link_libraries(graph_qt
-  Qt5::Widgets
+  Qt6::Widgets
   graph_qt_model
 )
 
@@ -41,8 +41,7 @@ target_include_directories(graph_qt PUBLIC "..")
 
 set_property(TARGET graph_qt PROPERTY AUTOMOC ON)
 
-# UTs
-
+# Unit tests.
 add_executable(graph_qt_unittests
   graph_rendering_unittest.cpp
   graph_unittest.cpp

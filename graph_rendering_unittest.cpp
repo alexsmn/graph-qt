@@ -9,8 +9,8 @@
 
 #include <gtest/gtest.h>
 
-#include <QCoreApplication>
 #include <QApplication>
+#include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
@@ -40,10 +40,11 @@ class TimeTestDataSource : public GraphDataSource {
 
   double GetCurrentValue() const override { return points_.back().y; }
 
-  std::unique_ptr<PointEnumerator> EnumPoints(double from,
-                                              double to,
-                                              bool include_left_bound,
-                                              bool include_right_bound) override {
+  std::unique_ptr<PointEnumerator> EnumPoints(
+      double from,
+      double to,
+      bool include_left_bound,
+      bool include_right_bound) override {
     return std::make_unique<TestPointEnumerator>(points_);
   }
 
@@ -166,6 +167,30 @@ TEST_F(GraphRenderingTest, BasicGraph) {
   }
 }
 
+TEST_F(GraphRenderingTest, DarkBackgroundUsesLightGraphChrome) {
+  Graph graph;
+
+  QPalette palette = graph.palette();
+  palette.setColor(graph.backgroundRole(), QColor{20, 20, 20});
+  graph.setPalette(palette);
+
+  EXPECT_GT(graph.text_color().red(), 200);
+  EXPECT_GT(graph.cursor_color().green(), 200);
+  EXPECT_GT(graph.grid_pen().color().blue(), 60);
+  EXPECT_LT(graph.grid_pen().color().blue(), graph.text_color().blue());
+  EXPECT_EQ(Graph::ContrastTextColor(QColor{0, 0, 160}), QColor(245, 245, 245));
+}
+
+TEST_F(GraphRenderingTest, LightBackgroundUsesDarkGraphChrome) {
+  Graph graph;
+
+  EXPECT_LT(graph.text_color().red(), 80);
+  EXPECT_LT(graph.cursor_color().green(), 80);
+  EXPECT_LT(graph.grid_pen().color().blue(), 240);
+  EXPECT_EQ(Graph::ContrastTextColor(QColor{240, 240, 240}),
+            QColor(25, 25, 25));
+}
+
 TEST_F(GraphRenderingTest, MultipleLines) {
   // Use different slopes to make lines visually distinct.
   TestDataSource data_source2(0.5, 20.0);  // slope=0.5, y_offset=20
@@ -211,16 +236,17 @@ TEST_F(GraphRenderingTest, MultipleLines) {
 TEST_F(GraphRenderingTest, MultiplePanes) {
   // Use time-based data sources with increasing and decreasing trends.
   // Fixed base time for reproducible rendering.
-  const auto base_time = QDateTime::fromMSecsSinceEpoch(1700000000000LL);  // 2023-11-14
+  const auto base_time =
+      QDateTime::fromMSecsSinceEpoch(1700000000000LL);  // 2023-11-14
   const int count = 100;
 
   // Pane 1: increasing trend (slope = 1.0)
-  TimeTestDataSource data_source1{base_time, std::chrono::hours(1), count,
-                                  1.0, 0.0};
+  TimeTestDataSource data_source1{base_time, std::chrono::hours(1), count, 1.0,
+                                  0.0};
 
   // Pane 2: decreasing trend (slope = -0.8, offset to keep values positive)
-  TimeTestDataSource data_source2{base_time, std::chrono::hours(1), count,
-                                  -0.8, 100.0};
+  TimeTestDataSource data_source2{base_time, std::chrono::hours(1), count, -0.8,
+                                  100.0};
 
   Graph graph;
   graph.setFixedSize(400, 300);

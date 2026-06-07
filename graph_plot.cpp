@@ -131,7 +131,7 @@ void GraphPlot::paintEvent(QPaintEvent* e) {
 
   // Frame.
   auto rect = this->rect();
-  painter.setPen(Qt::black);
+  painter.setPen(graph_->text_color());
   painter.drawLine(rect.right(), rect.top(), rect.right(), rect.bottom());
   painter.drawLine(rect.right(), rect.bottom(), rect.left(), rect.bottom());
 }
@@ -144,7 +144,7 @@ void GraphPlot::PaintHorizontalGrid(QPainter& painter) {
   }
 
   painter.save();
-  painter.setPen(graph_->grid_pen_);
+  painter.setPen(graph_->grid_pen());
 
   double first_value = 0.0;
   double last_value = 0.0;
@@ -301,7 +301,7 @@ void GraphPlot::PaintCursor(QPainter& painter, const GraphCursor& cursor) {
   }
 
   painter.save();
-  painter.setPen(QPen(Qt::black));
+  painter.setPen(QPen(graph_->cursor_color()));
 
   int pos = cursor.axis_->ConvertValueToScreen(cursor.position_);
   if (cursor.axis_->is_vertical()) {
@@ -319,7 +319,7 @@ void GraphPlot::PaintVerticalGrid(QPainter& painter) {
   }
 
   painter.save();
-  painter.setPen(graph_->grid_pen_);
+  painter.setPen(graph_->grid_pen());
 
   double first_value = 0.0;
   double last_value = 0.0;

@@ -103,7 +103,7 @@ class GraphAxis : public QWidget {
 
   double panning_range_max_ = std::numeric_limits<double>::max();
 
-  bool ignore_context_menu_ = false;
+  bool suppress_next_context_menu_ = false;
 
   bool time_fit_ = true;
   bool time_fit_updating_ = false;

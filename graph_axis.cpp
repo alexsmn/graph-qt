@@ -7,6 +7,7 @@
 #include "graph_qt/graph_time_helper.h"
 #include "graph_qt/model/graph_data_source.h"
 
+#include <QContextMenuEvent>
 #include <QDateTime>
 #include <QMouseEvent>
 #include <QPainter>
@@ -134,6 +135,7 @@ void GraphAxis::paintEvent(QPaintEvent* e) {
   }
 
   QPainter painter(this);
+  painter.setPen(graph_->text_color());
 
   // Draw axis line.
   /*if (is_vertical_)
@@ -174,7 +176,9 @@ void GraphAxis::PaintTick(QPainter& painter, int pos) const {
   }
 }
 
-void GraphAxis::PaintLabel(QPainter& painter, int pos, const QString& label) const {
+void GraphAxis::PaintLabel(QPainter& painter,
+                           int pos,
+                           const QString& label) const {
   if (is_vertical_) {
     QRect bounds(5, pos, 0, 0);
     painter.drawText(
@@ -204,7 +208,7 @@ void GraphAxis::PaintCurrentValue(QPainter& painter, const GraphLine& line) {
   rect.adjust(5, 0, 0, 0);
 
   auto label = line.data_source()->GetYAxisLabel(value);
-  painter.setPen(Qt::white);
+  painter.setPen(Graph::ContrastTextColor(line.color()));
   painter.drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, label);
 }
 
@@ -322,10 +326,13 @@ void GraphAxis::resizeEvent(QResizeEvent* e) {
 
 void GraphAxis::mousePressEvent(QMouseEvent* event) {
   if (event->button() == Qt::RightButton) {
-    ignore_context_menu_ = false;
+    suppress_next_context_menu_ = false;
     if (graph_->selected_cursor()) {
       graph_->DeleteCursor(*graph_->selected_cursor());
-      ignore_context_menu_ = true;
+      suppress_next_context_menu_ = true;
+      event->accept();
+    } else {
+      event->ignore();
     }
     return;
   }
@@ -393,9 +400,21 @@ void GraphAxis::mouseReleaseEvent(QMouseEvent* event) {
 void GraphAxis::contextMenuEvent(QContextMenuEvent* event) {
   assert(graph_);
 
-  if (!ignore_context_menu_) {
-    QWidget::contextMenuEvent(event);
+  if (event->reason() == QContextMenuEvent::Mouse &&
+      graph_->selected_cursor()) {
+    graph_->DeleteCursor(*graph_->selected_cursor());
+    suppress_next_context_menu_ = false;
+    event->accept();
+    return;
   }
+
+  if (suppress_next_context_menu_) {
+    suppress_next_context_menu_ = false;
+    event->accept();
+    return;
+  }
+
+  QWidget::contextMenuEvent(event);
 }
 
 const GraphCursor* GraphAxis::GetCursorLabelAt(QPoint point) const {
@@ -412,14 +431,14 @@ const GraphCursor* GraphAxis::GetCursorLabelAt(QPoint point) const {
 
 void GraphAxis::PaintCursorLabel(QPainter& painter, const GraphCursor& cursor) {
   auto color = &cursor == graph_->selected_cursor_
-                   ? graph_->selected_cursor_color_
-                   : Qt::black;
+                   ? graph_->selected_cursor_color()
+                   : graph_->cursor_color();
 
   auto rect = GetCursorLabelRect(cursor);
   painter.fillRect(rect, color);
 
   auto label = graph_->GetCursorLabel(cursor);
-  painter.setPen(Qt::white);
+  painter.setPen(graph_->cursor_label_text_color(color));
   painter.drawText(rect, Qt::AlignHCenter | Qt::AlignVCenter, label);
 }
 

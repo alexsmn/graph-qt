@@ -13,10 +13,10 @@ set_target_properties(graph_qt_model PROPERTIES
 target_include_directories(graph_qt_model PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../..")
 
 target_link_libraries(graph_qt_model
-  Qt5::Widgets
+  Qt6::Widgets
 )
 
-# Unit tests
+# Unit tests.
 add_executable(graph_qt_model_unittests
   graph_range_unittest.cpp
 )

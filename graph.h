@@ -32,6 +32,7 @@ class Graph : public QFrame {
     virtual void OnGraphPannedHorizontally() {}
     virtual void OnLineItemChanged(GraphLine& line) {}
     virtual void OnSelectedCursorChanged() {}
+    virtual void OnGraphActivated() {}
   };
 
   explicit Graph(QWidget* parent = nullptr);
@@ -74,13 +75,20 @@ class Graph : public QFrame {
   // Get horizontal label string. Shall be called only in scope of DrawYAxis().
   virtual QString GetXAxisLabel(double value) const;
 
+  QColor background_color() const;
+  QColor text_color() const;
+  QPen grid_pen() const;
+  QColor cursor_color() const;
+  QColor selected_cursor_color() const;
+  QColor cursor_label_text_color(const QColor& background) const;
+
+  static QColor ContrastTextColor(const QColor& background);
+
   // View
   /*virtual bool IsFocusable() const { return true; }
   virtual void RequestFocus();*/
 
   int vertical_cursor_label_width_ = 70;
-  QPen grid_pen_{QColor(237, 237, 237)};
-  QColor selected_cursor_color_{100, 100, 100};
 
   static const int kVerticalAxisWidth = 50;
   static const int kHorizontalAxisHeight = 22;
@@ -94,6 +102,7 @@ class Graph : public QFrame {
   void AdjustTimeRange(GraphRange& range) const;
 
   // QWidget
+  bool eventFilter(QObject* object, QEvent* event) override;
   void mousePressEvent(QMouseEvent* e) override;
 
  private:
@@ -109,6 +118,8 @@ class Graph : public QFrame {
   using ZoomingHistory = std::deque<ZoomingHistoryItem>;
 
   void InvalidateCursor(const GraphCursor& cursor);
+  void NotifyActivated(const QEvent& event);
+  void InstallActivationFilter(QWidget& widget);
 
   void OnHorizontalAxisRangeChanged();
   GraphRange GetTotalHorizontalRange() const;
@@ -133,6 +144,8 @@ class Graph : public QFrame {
 
   std::unique_ptr<HorizontalScrollBarController>
       horizontal_scroll_bar_controller_;
+
+  const QEvent* last_activation_event_ = nullptr;
 
   // TODO: Remove friends.
   friend class GraphAxis;

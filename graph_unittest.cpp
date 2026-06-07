@@ -8,6 +8,11 @@
 
 #include <gmock/gmock.h>
 
+#include <QApplication>
+#include <QContextMenuEvent>
+#include <QMouseEvent>
+#include <QSplitter>
+
 using namespace ::testing;
 
 namespace views {
@@ -18,6 +23,13 @@ class GraphTest : public Test {
   TestDataSource data_source_;
 
   Graph graph_;
+};
+
+class TestGraphController final : public Graph::Controller {
+ public:
+  void OnGraphActivated() override { ++activation_count; }
+
+  int activation_count = 0;
 };
 
 TEST_F(GraphTest, AddPane) {
@@ -111,6 +123,58 @@ TEST_F(GraphTest, SelectPane) {
 
   graph_.SelectPane(nullptr);
   EXPECT_EQ(graph_.selected_pane(), nullptr);
+}
+
+TEST_F(GraphTest, ActivateOnGraphClick) {
+  TestGraphController controller;
+  graph_.set_controller(&controller);
+
+  QMouseEvent press{QEvent::MouseButtonPress, QPointF{10, 10},
+                    QPointF{100, 100},        Qt::LeftButton,
+                    Qt::LeftButton,           Qt::NoModifier};
+  QApplication::sendEvent(&graph_, &press);
+
+  EXPECT_EQ(controller.activation_count, 1);
+}
+
+TEST_F(GraphTest, ActivateOnEmptySplitterClick) {
+  TestGraphController controller;
+  graph_.set_controller(&controller);
+  auto* splitter = graph_.findChild<QSplitter*>();
+  ASSERT_THAT(splitter, NotNull());
+
+  QMouseEvent press{QEvent::MouseButtonPress, QPointF{10, 10},
+                    QPointF{100, 100},        Qt::LeftButton,
+                    Qt::LeftButton,           Qt::NoModifier};
+  QApplication::sendEvent(splitter, &press);
+
+  EXPECT_GE(controller.activation_count, 1);
+}
+
+TEST_F(GraphTest, ActivateOnPanePlotAndAxisClick) {
+  TestGraphController controller;
+  graph_.set_controller(&controller);
+  auto* pane = graph_.AddPane();
+
+  QMouseEvent pane_press{QEvent::MouseButtonPress, QPointF{10, 10},
+                         QPointF{100, 100},        Qt::LeftButton,
+                         Qt::LeftButton,           Qt::NoModifier};
+  QApplication::sendEvent(pane, &pane_press);
+  int activation_count = controller.activation_count;
+  EXPECT_GE(activation_count, 1);
+
+  QMouseEvent plot_press{QEvent::MouseButtonPress, QPointF{10, 10},
+                         QPointF{100, 100},        Qt::LeftButton,
+                         Qt::LeftButton,           Qt::NoModifier};
+  QApplication::sendEvent(&pane->plot(), &plot_press);
+  EXPECT_GT(controller.activation_count, activation_count);
+  activation_count = controller.activation_count;
+
+  QMouseEvent axis_press{QEvent::MouseButtonPress, QPointF{10, 10},
+                         QPointF{100, 100},        Qt::LeftButton,
+                         Qt::LeftButton,           Qt::NoModifier};
+  QApplication::sendEvent(&pane->vertical_axis(), &axis_press);
+  EXPECT_GT(controller.activation_count, activation_count);
 }
 
 TEST_F(GraphTest, AddMultipleLines) {
@@ -242,6 +306,56 @@ TEST_F(GraphTest, DeleteCursor) {
 
   EXPECT_EQ(graph_.horizontal_axis().cursors().size(), 1u);
   EXPECT_EQ(graph_.horizontal_axis().cursors()[0].position_, 600.0);
+}
+
+TEST_F(GraphTest, AxisContextMenuEventPropagatesWithoutSelectedCursor) {
+  graph_.AddPane();
+  auto& axis = graph_.horizontal_axis();
+
+  QContextMenuEvent event{QContextMenuEvent::Mouse, QPoint{10, 10},
+                          QPoint{100, 100}};
+  QApplication::sendEvent(&axis, &event);
+
+  EXPECT_FALSE(event.isAccepted());
+}
+
+TEST_F(GraphTest, AxisContextMenuEventDeletesSelectedCursor) {
+  graph_.AddPane();
+  auto& axis = graph_.horizontal_axis();
+  const auto& cursor = axis.AddCursor(500.0);
+  graph_.SelectCursor(&cursor);
+
+  QContextMenuEvent event{QContextMenuEvent::Mouse, QPoint{10, 10},
+                          QPoint{100, 100}};
+  QApplication::sendEvent(&axis, &event);
+
+  EXPECT_TRUE(event.isAccepted());
+  EXPECT_EQ(graph_.selected_cursor(), nullptr);
+  EXPECT_TRUE(axis.cursors().empty());
+}
+
+TEST_F(GraphTest, AxisContextMenuSuppressionDoesNotLeakPastDeleteGesture) {
+  graph_.AddPane();
+  auto& axis = graph_.horizontal_axis();
+  const auto& cursor = axis.AddCursor(500.0);
+  graph_.SelectCursor(&cursor);
+
+  QMouseEvent press{QEvent::MouseButtonPress, QPointF{10, 10},
+                    QPointF{100, 100},        Qt::RightButton,
+                    Qt::RightButton,          Qt::NoModifier};
+  QApplication::sendEvent(&axis, &press);
+  EXPECT_TRUE(press.isAccepted());
+  EXPECT_TRUE(axis.cursors().empty());
+
+  QContextMenuEvent suppressed_event{QContextMenuEvent::Mouse, QPoint{10, 10},
+                                     QPoint{100, 100}};
+  QApplication::sendEvent(&axis, &suppressed_event);
+  EXPECT_TRUE(suppressed_event.isAccepted());
+
+  QContextMenuEvent next_event{QContextMenuEvent::Mouse, QPoint{10, 10},
+                               QPoint{100, 100}};
+  QApplication::sendEvent(&axis, &next_event);
+  EXPECT_FALSE(next_event.isAccepted());
 }
 
 TEST_F(GraphTest, HorizontalAxisRange) {
