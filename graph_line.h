@@ -24,6 +24,9 @@ class GraphLine : protected GraphDataSource::Observer {
   QColor color() const { return color_; }
   void SetColor(const QColor& color);
 
+  int line_weight() const { return line_weight_; }
+  void SetLineWeight(int line_weight);
+
   GraphDataSource* data_source() { return data_source_; }
   const GraphDataSource* data_source() const { return data_source_; }
   void SetDataSource(GraphDataSource* data_source);

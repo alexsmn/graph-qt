@@ -6,6 +6,7 @@
 #include "graph_qt/model/graph_data_source.h"
 
 #include <QPainter>
+#include <algorithm>
 #include <cfloat>
 
 namespace views {
@@ -55,6 +56,18 @@ void GraphLine::SetDataSource(GraphDataSource* data_source) {
   UpdateVerticalRange();
 
   // Values changed, need to invalidate.
+  if (plot_) {
+    plot_->update();
+  }
+}
+
+void GraphLine::SetLineWeight(int line_weight) {
+  line_weight = std::clamp(line_weight, 1, 10);
+  if (line_weight_ == line_weight) {
+    return;
+  }
+
+  line_weight_ = line_weight;
   if (plot_) {
     plot_->update();
   }
