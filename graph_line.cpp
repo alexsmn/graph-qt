@@ -5,6 +5,7 @@
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/model/graph_data_source.h"
 
+#include <QFontMetrics>
 #include <QPainter>
 #include <algorithm>
 #include <cfloat>
@@ -73,15 +74,41 @@ void GraphLine::SetLineWeight(int line_weight) {
   }
 }
 
+void GraphLine::SetLimitStyle(LimitBand band, const LimitStyle& style) {
+  limit_styles_[static_cast<int>(band)] = style;
+  if (plot_) {
+    plot_->update();
+  }
+}
+
+void GraphLine::ClearLimitStyles() {
+  for (LimitStyle& style : limit_styles_) {
+    style = LimitStyle{};
+  }
+  if (plot_) {
+    plot_->update();
+  }
+}
+
 void GraphLine::DrawLimit(QPainter& painter,
                           const QRect& rect,
                           double limit,
-                          const QPen& pen) const {
-  int y = ValueToY(limit);
-  // TODO: Set pen preliminary.
+                          const LimitStyle& style) const {
+  if (limit == kGraphUnknownValue) {
+    return;
+  }
+  const int y = ValueToY(limit);
+  const QColor color = style.color.isValid() ? style.color : color_;
   painter.save();
-  painter.setPen(pen);
+  painter.setPen(QPen(QBrush(color), 1, Qt::DashLine));
   painter.drawLine(rect.x(), y, rect.right(), y);
+  if (!style.label.isEmpty()) {
+    // Solid caption sitting just above the line at the right edge.
+    painter.setPen(color);
+    const QFontMetrics metrics(painter.font());
+    const int text_width = metrics.horizontalAdvance(style.label);
+    painter.drawText(rect.right() - text_width - 4, y - 3, style.label);
+  }
   painter.restore();
 }
 
@@ -146,19 +173,17 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
     }
   }
 
-  QPen limits_pen(brush, 1, Qt::DashLine);
-  if (data_source_->limit_hi_ != kGraphUnknownValue) {
-    DrawLimit(painter, rect, data_source_->limit_hi_, limits_pen);
-  }
-  if (data_source_->limit_lo_ != kGraphUnknownValue) {
-    DrawLimit(painter, rect, data_source_->limit_lo_, limits_pen);
-  }
-  if (data_source_->limit_hihi_ != kGraphUnknownValue) {
-    DrawLimit(painter, rect, data_source_->limit_hihi_, limits_pen);
-  }
-  if (data_source_->limit_lolo_ != kGraphUnknownValue) {
-    DrawLimit(painter, rect, data_source_->limit_lolo_, limits_pen);
-  }
+  // Limit bands: DrawLimit skips unset bands and falls back to the series
+  // colour when a band has no explicit style, so this reproduces the historical
+  // series-coloured dashed limits until a caller sets per-band styles.
+  DrawLimit(painter, rect, data_source_->limit_lolo_,
+            limit_styles_[static_cast<int>(LimitBand::kLoLo)]);
+  DrawLimit(painter, rect, data_source_->limit_lo_,
+            limit_styles_[static_cast<int>(LimitBand::kLo)]);
+  DrawLimit(painter, rect, data_source_->limit_hi_,
+            limit_styles_[static_cast<int>(LimitBand::kHi)]);
+  DrawLimit(painter, rect, data_source_->limit_hihi_,
+            limit_styles_[static_cast<int>(LimitBand::kHiHi)]);
 }
 
 void GraphLine::SetCurrentValue(double value) {

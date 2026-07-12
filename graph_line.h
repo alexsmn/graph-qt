@@ -4,6 +4,7 @@
 #include "graph_qt/model/graph_range.h"
 
 #include <QColor>
+#include <QString>
 #include <cassert>
 
 class QPainter;
@@ -66,10 +67,26 @@ class GraphLine : protected GraphDataSource::Observer {
                        GraphPoint& data_point,
                        int max_distance);
 
+  // The four analog-limit bands, low → high.
+  enum class LimitBand { kLoLo, kLo, kHi, kHiHi };
+
+  // Optional presentation for one limit band. When `color` is invalid the band
+  // is drawn in the series colour (the historical look); when `label` is
+  // non-empty it is captioned beside the line. Callers (e.g. the SCADA client
+  // under its opt-in severity theme) set these to colour alarm/warning bands.
+  struct LimitStyle {
+    QColor color;   // invalid => series colour
+    QString label;  // empty => no caption
+  };
+
+  // Sets / clears the presentation of a limit band. Repaints the plot.
+  void SetLimitStyle(LimitBand band, const LimitStyle& style);
+  void ClearLimitStyles();
+
   void DrawLimit(QPainter& painter,
                  const QRect& rect,
                  double limit,
-                 const QPen& pen) const;
+                 const LimitStyle& style) const;
 
   virtual void Draw(QPainter& painter, const QRect& rect);
 
@@ -113,6 +130,10 @@ class GraphLine : protected GraphDataSource::Observer {
   double current_value_ = kGraphUnknownValue;
 
   QColor color_ = Qt::black;
+
+  // Per-band limit presentation, indexed by LimitBand. Default-constructed
+  // (invalid colour, empty label) => the historical series-coloured line.
+  LimitStyle limit_styles_[4];
 
   unsigned flags_ = STEPPED | AUTO_RANGE | SHOW_DOTS;
   int line_weight_ = 1;
