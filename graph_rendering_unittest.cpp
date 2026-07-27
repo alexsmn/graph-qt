@@ -58,6 +58,19 @@ class TimeTestDataSource : public GraphDataSource {
   std::vector<GraphPoint> points_;
 };
 
+// Counts paint events delivered to the widget it is installed on.
+class PaintCounter : public QObject {
+ public:
+  int count = 0;
+
+ protected:
+  bool eventFilter(QObject* object, QEvent* event) override {
+    if (event->type() == QEvent::Paint)
+      ++count;
+    return QObject::eventFilter(object, event);
+  }
+};
+
 // Returns the path to the testdata directory.
 QString GetTestDataPath() {
   QDir dir{QFileInfo{QString::fromUtf8(__FILE__)}.absoluteDir()};
@@ -184,11 +197,58 @@ TEST_F(GraphRenderingTest, DarkBackgroundUsesLightGraphChrome) {
 TEST_F(GraphRenderingTest, LightBackgroundUsesDarkGraphChrome) {
   Graph graph;
 
+  QPalette palette = graph.palette();
+  palette.setColor(graph.backgroundRole(), QColor{240, 240, 240});
+  graph.setPalette(palette);
+
   EXPECT_LT(graph.text_color().red(), 80);
   EXPECT_LT(graph.cursor_color().green(), 80);
   EXPECT_LT(graph.grid_pen().color().blue(), 240);
   EXPECT_EQ(Graph::ContrastTextColor(QColor{240, 240, 240}),
             QColor(25, 25, 25));
+}
+
+// The canvas used to be hardwired to Qt::white in the constructor, which left a
+// white plot in a dark window on any dark-appearance desktop. It is a data
+// surface, so it takes QPalette::Base and follows the palette instead.
+TEST_F(GraphRenderingTest, CanvasFollowsBaseRole) {
+  Graph graph;
+
+  EXPECT_EQ(graph.backgroundRole(), QPalette::Base);
+
+  QPalette dark_palette = graph.palette();
+  dark_palette.setColor(QPalette::Base, QColor{18, 18, 18});
+  graph.setPalette(dark_palette);
+
+  EXPECT_EQ(graph.background_color(), QColor(18, 18, 18));
+  EXPECT_GT(graph.text_color().red(), 200);
+}
+
+// The panes, plots and axes paint from the Graph's colours rather than from
+// their own palettes, so a palette change has to reach them or an OS
+// light/dark switch leaves the chart chrome drawn for the previous appearance.
+// Qt gives this for free today — children inherit the palette, so propagation
+// repaints them — but only for as long as no child sets a palette of its own.
+// This test is the guard on that.
+TEST_F(GraphRenderingTest, PaletteChangeRepaintsChildren) {
+  Graph graph;
+  graph.setFixedSize(400, 300);
+  auto* pane = graph.AddPane();
+  pane->plot().AddLine(data_source_);
+
+  graph.show();
+  QCoreApplication::processEvents();
+
+  PaintCounter counter;
+  pane->plot().installEventFilter(&counter);
+  counter.count = 0;
+
+  QPalette dark_palette = graph.palette();
+  dark_palette.setColor(QPalette::Base, QColor{18, 18, 18});
+  graph.setPalette(dark_palette);
+  QCoreApplication::processEvents();
+
+  EXPECT_GT(counter.count, 0);
 }
 
 TEST_F(GraphRenderingTest, MultipleLines) {

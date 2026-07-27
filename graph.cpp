@@ -93,10 +93,16 @@ Graph::Graph(QWidget* parent) : QFrame{parent} {
 
   setFrameStyle(QFrame::StyledPanel);
 
-  QPalette palette = this->palette();
-  palette.setColor(backgroundRole(), Qt::white);
+  // The plot canvas is a data surface — the same class of surface as a table or
+  // tree view — so it takes QPalette::Base rather than a hard-coded colour. The
+  // widget then follows the host OS light/dark appearance, and everything
+  // derived from the canvas follows with it: text_color(), grid_pen(), the
+  // cursor colours and the consumer-side series-contrast checks all resolve
+  // through palette().color(backgroundRole()). A consumer that needs a fixed
+  // canvas (an explicit theme, or an operator's saved choice) overrides the
+  // colour of this role instead of the role itself.
+  setBackgroundRole(QPalette::Base);
   setAutoFillBackground(true);
-  setPalette(palette);
 }
 
 Graph::~Graph() {
