@@ -19,12 +19,14 @@ requests (commit `78a01d4` is "… (#1)"). In practice review has been happening
 on the diff before the commit rather than in a PR; keep doing that unless the
 user asks for a PR.
 
-**The local default branch is `add-vcpkg-manifest`, not `main`.** That is what
-`origin/HEAD` points at and where the work lands; the name is a leftover from
-how the branch started. GitHub's default branch is `main`, so pushes to
-`github` should update both branches to keep the public landing page current.
-`origin/main` on the local mirror is stale and fully contained in the default
-branch — leave it alone.
+**The default branch is `main`, on both remotes.** Land changes there when the
+user asks for a commit.
+
+Until 2026-07-26 the default was `add-vcpkg-manifest` — a name left over from
+how that branch started — while `main` sat stale behind it. That branch was
+fast-forward merged into `main`, and `origin/HEAD` on the mirror was repointed,
+so the two remotes and the local clone now agree. Older guidance in this file
+said `main` was abandoned and must not be pushed to; that no longer applies.
 
 There is no CI as of 2026-07-26: `.github/workflows/ci.yml` was deleted that
 day. It did run on GitHub — 8 recorded runs, on `main` pushes and on pull
