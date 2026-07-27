@@ -4,11 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Workflow
 
-Do not commit changes automatically. Wait for explicit user request before creating commits.
+Do not commit changes automatically. Wait for explicit user request before
+creating commits. Build and test locally before you do.
 
-Do not commit directly to main. Create GitHub pull requests instead.
+**There is no GitHub remote and no pull-request flow.** The only remote is a
+local bare mirror — `/Users/alexsmn/tc/git/scada/graph_qt.git`, which is also
+the URL the superproject's `.gitmodules` uses. Earlier guidance here said to
+open a pull request instead of committing; there is nowhere to open one, so
+review happens on the diff before the commit, not after it.
 
-Before creating or updating a PR, build and test locally.
+**The default branch is `add-vcpkg-manifest`, not `main`.** That is what
+`origin/HEAD` points at and where the work has been landing; the name is a
+leftover from how the branch started. `origin/main` is stale and abandoned —
+it is fully contained in the default branch and has no unique commits — so do
+not treat it as the mainline, and do not "fix" the situation by pushing there.
+Land changes on the default branch when the user asks for a commit.
+
+`.github/workflows/ci.yml` still triggers on `main` and is therefore dead: no
+GitHub remote means it never runs, and it names a branch that is not the
+default anyway. Do not rely on it as a gate — local `ctest` is the only check
+that actually executes.
+
+This repository is consumed as a submodule of the `scada` superproject, so a
+change here is only half a change: the superproject needs a matching submodule
+pointer bump before anything else sees it.
 
 ## Build Commands
 
