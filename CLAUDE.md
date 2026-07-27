@@ -20,10 +20,11 @@ it is fully contained in the default branch and has no unique commits — so do
 not treat it as the mainline, and do not "fix" the situation by pushing there.
 Land changes on the default branch when the user asks for a commit.
 
-`.github/workflows/ci.yml` still triggers on `main` and is therefore dead: no
-GitHub remote means it never runs, and it names a branch that is not the
-default anyway. Do not rely on it as a gate — local `ctest` is the only check
-that actually executes.
+There is no CI. `.github/workflows/ci.yml` was deleted on 2026-07-26: with no
+GitHub remote it never ran, it triggered on `main` rather than the default
+branch, and it still installed Qt 5 long after the build moved to Qt6. Local
+`ctest` is the only check that actually executes — run it before asking for a
+commit, and do not add a workflow back unless a real remote appears.
 
 This repository is consumed as a submodule of the `scada` superproject, so a
 change here is only half a change: the superproject needs a matching submodule
@@ -31,25 +32,32 @@ pointer bump before anything else sees it.
 
 ## Build Commands
 
+Run these from a Visual Studio Developer Command Prompt — the Ninja generator
+needs `cl.exe` on `PATH`.
+
 ```batch
-# Configure (requires CMakeUserPresets.json with local paths)
-cmake --preset windows-x86-debug
+# Configure (requires CMakeUserPresets.json with local paths; copy the example)
+cmake --preset ninja-x86-local
 
 # Build
-cmake --build --preset windows-x86-debug
+cmake --build --preset ninja-x86-local-debug
 
 # Run unit tests
-ctest --preset windows-x86-debug
+ctest --preset ninja-x86-local-debug
 
 # Run the test application
-build-windows\Debug\graph_qt_tester.exe
+build-ninja-x86\Debug\graph_qt_tester.exe
 ```
+
+`CMakePresets.json` ships only `ninja-x86` / `ninja-x64`; the `-local` variants
+above come from `CMakeUserPresets.json.example` and add the vcpkg toolchain and
+Ninja paths. Substitute `x64` for `x86` throughout for a 64-bit build.
 
 See [README.md](README.md) for prerequisites and `CMakeUserPresets.json` setup.
 
 ## Architecture
 
-This is a Qt5-based graphing library in the `views` namespace. The widget hierarchy:
+This is a Qt6-based graphing library in the `views` namespace. The widget hierarchy:
 
 ```
 Graph (QFrame)
