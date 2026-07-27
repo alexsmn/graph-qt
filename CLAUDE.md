@@ -7,24 +7,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Do not commit changes automatically. Wait for explicit user request before
 creating commits. Build and test locally before you do.
 
-**There is no GitHub remote and no pull-request flow.** The only remote is a
-local bare mirror — `/Users/alexsmn/tc/git/scada/graph_qt.git`, which is also
-the URL the superproject's `.gitmodules` uses. Earlier guidance here said to
-open a pull request instead of committing; there is nowhere to open one, so
-review happens on the diff before the commit, not after it.
+**There are two remotes.** `origin` is a local bare mirror —
+`/Users/alexsmn/tc/git/scada/graph_qt.git`, which is also the URL the
+superproject's `.gitmodules` uses. `github` is the public GitHub repository
+[alexsmn/graph-qt](https://github.com/alexsmn/graph-qt) (note the hyphen; the
+directory name uses an underscore). Anything pushed to `github` is public.
 
-**The default branch is `add-vcpkg-manifest`, not `main`.** That is what
-`origin/HEAD` points at and where the work has been landing; the name is a
-leftover from how the branch started. `origin/main` is stale and abandoned —
-it is fully contained in the default branch and has no unique commits — so do
-not treat it as the mainline, and do not "fix" the situation by pushing there.
-Land changes on the default branch when the user asks for a commit.
+Earlier guidance in this file claimed there was no GitHub remote and no
+pull-request flow. That was wrong on both counts — the repo has carried pull
+requests (commit `78a01d4` is "… (#1)"). In practice review has been happening
+on the diff before the commit rather than in a PR; keep doing that unless the
+user asks for a PR.
 
-There is no CI. `.github/workflows/ci.yml` was deleted on 2026-07-26: with no
-GitHub remote it never ran, it triggered on `main` rather than the default
-branch, and it still installed Qt 5 long after the build moved to Qt6. Local
-`ctest` is the only check that actually executes — run it before asking for a
-commit, and do not add a workflow back unless a real remote appears.
+**The local default branch is `add-vcpkg-manifest`, not `main`.** That is what
+`origin/HEAD` points at and where the work lands; the name is a leftover from
+how the branch started. GitHub's default branch is `main`, so pushes to
+`github` should update both branches to keep the public landing page current.
+`origin/main` on the local mirror is stale and fully contained in the default
+branch — leave it alone.
+
+There is no CI as of 2026-07-26: `.github/workflows/ci.yml` was deleted that
+day. It did run on GitHub — 8 recorded runs, on `main` pushes and on pull
+requests — but **every run failed**, each after roughly 1h40m, and it still
+installed Qt 5.15.2 and `qtbase5-dev` long after the build moved to Qt6. Local
+`ctest` is the only check that actually executes; run it before asking for a
+commit. A replacement workflow would need a Qt6 toolchain and a build that
+finishes in reasonable time.
 
 This repository is consumed as a submodule of the `scada` superproject, so a
 change here is only half a change: the superproject needs a matching submodule
