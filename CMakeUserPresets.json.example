@@ -1,0 +1,101 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "ninja-x86-local",
+      "displayName": "Ninja x86 (local paths)",
+      "inherits": "ninja-x86",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x86-windows",
+        "CMAKE_MAKE_PROGRAM": "<path-to-ninja>/ninja.exe"
+      }
+    },
+    {
+      "name": "ninja-x64-local",
+      "displayName": "Ninja x64 (local paths)",
+      "inherits": "ninja-x64",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "<path-to-vcpkg>/scripts/buildsystems/vcpkg.cmake",
+        "VCPKG_TARGET_TRIPLET": "x64-windows",
+        "CMAKE_MAKE_PROGRAM": "<path-to-ninja>/ninja.exe"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ninja-x86-local-debug",
+      "displayName": "Ninja x86 Debug (local)",
+      "configurePreset": "ninja-x86-local",
+      "configuration": "Debug"
+    },
+    {
+      "name": "ninja-x86-local-release",
+      "displayName": "Ninja x86 Release (local)",
+      "configurePreset": "ninja-x86-local",
+      "configuration": "Release"
+    },
+    {
+      "name": "ninja-x64-local-debug",
+      "displayName": "Ninja x64 Debug (local)",
+      "configurePreset": "ninja-x64-local",
+      "configuration": "Debug"
+    },
+    {
+      "name": "ninja-x64-local-release",
+      "displayName": "Ninja x64 Release (local)",
+      "configurePreset": "ninja-x64-local",
+      "configuration": "Release"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ninja-x86-local-debug",
+      "displayName": "Ninja x86 Debug Tests (local)",
+      "configurePreset": "ninja-x86-local",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "PATH": "${sourceDir}/build-ninja-x86/vcpkg_installed/x86-windows/debug/bin;${sourceDir}/build-ninja-x86/vcpkg_installed/x86-windows/bin;$penv{PATH}"
+      }
+    },
+    {
+      "name": "ninja-x86-local-release",
+      "displayName": "Ninja x86 Release Tests (local)",
+      "configurePreset": "ninja-x86-local",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "PATH": "${sourceDir}/build-ninja-x86/vcpkg_installed/x86-windows/bin;$penv{PATH}"
+      }
+    },
+    {
+      "name": "ninja-x64-local-debug",
+      "displayName": "Ninja x64 Debug Tests (local)",
+      "configurePreset": "ninja-x64-local",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "PATH": "${sourceDir}/build-ninja-x64/vcpkg_installed/x64-windows/debug/bin;${sourceDir}/build-ninja-x64/vcpkg_installed/x64-windows/bin;$penv{PATH}"
+      }
+    },
+    {
+      "name": "ninja-x64-local-release",
+      "displayName": "Ninja x64 Release Tests (local)",
+      "configurePreset": "ninja-x64-local",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      },
+      "environment": {
+        "PATH": "${sourceDir}/build-ninja-x64/vcpkg_installed/x64-windows/bin;$penv{PATH}"
+      }
+    }
+  ]
+}
