@@ -9,6 +9,7 @@
       "name": "qtbase",
       "default-features": false,
       "features": [
+        "png",
         "widgets"
       ]
     },
@@ -21,8 +22,20 @@
       "name": "qtbase",
       "default-features": false,
       "features": [
+        "png",
         "widgets"
       ]
     }
+  ],
+  "$comment": [
+    "qtbase's `png` feature is required, not cosmetic: graph_rendering_unittest",
+    "compares a rendered QImage against the golden PNGs in testdata/. Without the",
+    "PNG codec QImage can neither load a golden nor save one, and the rendering",
+    "tests fail with 'Failed to save golden image' -- after truncating the",
+    "tracked golden to zero bytes, because QImage::save opens the file before it",
+    "discovers it cannot encode.",
+    "Declared 2026-08-08 (ADR 0011 phase 2), same as view_manager_qt: until these",
+    "repos built standalone the codec always arrived through the client's own",
+    "qtbase, so nothing here had to ask for it."
   ]
 }

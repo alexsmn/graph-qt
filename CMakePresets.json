@@ -1,77 +1,57 @@
 {
-  "version": 4,
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
   "configurePresets": [
     {
-      "name": "ninja-x86",
-      "displayName": "Ninja x86",
+      "name": "ninja",
+      "displayName": "Ninja Multi-Config",
+      "description": "Self-contained per ADR 0011: no shared preset file, no include. Machine-specific settings live in .scada-local.cmake beside build-support/; VCPKG_ROOT stays an environment variable because the toolchain runs before any of our CMake.",
       "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build-ninja-x86",
-      "architecture": {
-        "value": "x86",
-        "strategy": "external"
-      }
-    },
-    {
-      "name": "ninja-x64",
-      "displayName": "Ninja x64",
-      "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build-ninja-x64",
-      "architecture": {
-        "value": "x64",
-        "strategy": "external"
+      "binaryDir": "${sourceDir}/build/ninja",
+      "toolchainFile": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "ninja-x86-debug",
-      "configurePreset": "ninja-x86",
+      "name": "debug",
+      "displayName": "Debug",
+      "configurePreset": "ninja",
       "configuration": "Debug"
     },
     {
-      "name": "ninja-x86-release",
-      "configurePreset": "ninja-x86",
+      "name": "release",
+      "displayName": "Release",
+      "configurePreset": "ninja",
       "configuration": "Release"
     },
     {
-      "name": "ninja-x64-debug",
-      "configurePreset": "ninja-x64",
-      "configuration": "Debug"
-    },
-    {
-      "name": "ninja-x64-release",
-      "configurePreset": "ninja-x64",
-      "configuration": "Release"
+      "name": "relwithdebinfo",
+      "displayName": "RelWithDebInfo",
+      "configurePreset": "ninja",
+      "configuration": "RelWithDebInfo"
     }
   ],
   "testPresets": [
     {
-      "name": "ninja-x86-debug",
-      "configurePreset": "ninja-x86",
+      "name": "test-debug",
+      "displayName": "Debug Tests",
+      "configurePreset": "ninja",
       "configuration": "Debug",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "ninja-x86-release",
-      "configurePreset": "ninja-x86",
-      "configuration": "Release",
-      "output": {
-        "outputOnFailure": true
-      }
-    },
-    {
-      "name": "ninja-x64-debug",
-      "configurePreset": "ninja-x64",
-      "configuration": "Debug",
-      "output": {
-        "outputOnFailure": true
-      }
-    },
-    {
-      "name": "ninja-x64-release",
-      "configurePreset": "ninja-x64",
+      "name": "test-release",
+      "displayName": "Release Tests",
+      "configurePreset": "ninja",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true

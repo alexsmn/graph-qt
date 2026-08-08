@@ -24,60 +24,33 @@ Qt6-based graphing widget library for displaying time-series data with interacti
 
 ## Build
 
-`CMakePresets.json` ships only generator-level presets (`ninja-x86`,
-`ninja-x64`); machine-specific paths live in your own `CMakeUserPresets.json`,
-which is gitignored.
+Qt needs no path: with the vcpkg toolchain, manifest mode builds the `qtbase`
+dependency from `vcpkg.json` into the build tree. Point `CMAKE_PREFIX_PATH` at
+an existing Qt 6 installation only if you want one instead — and note that the
+official Qt 6 installer ships no 32-bit MSVC kit, so a 32-bit build must use
+vcpkg.
 
-1. Copy `CMakeUserPresets.json.example` to `CMakeUserPresets.json`. It defines
-   `-local` variants of the shipped presets — update the placeholder paths:
-   - `CMAKE_TOOLCHAIN_FILE` - path to the vcpkg toolchain
-     (`<vcpkg>/scripts/buildsystems/vcpkg.cmake`)
-   - `CMAKE_MAKE_PROGRAM` - path to `ninja.exe`; drop this entry if Ninja is
-     already on `PATH`
+```bash
+# Configure
+cmake --preset ninja
 
-   Qt needs no path here: with the vcpkg toolchain, manifest mode builds the
-   `qtbase` dependency from `vcpkg.json` into the build tree. Only add
-   `CMAKE_PREFIX_PATH` if you want to point at an existing Qt 6 installation
-   instead — and note that the official Qt 6 installer ships no 32-bit MSVC
-   kit, so the x86 preset must use vcpkg.
+# Build
+cmake --build --preset release      # or: debug, relwithdebinfo
 
-2. Build from a Visual Studio Developer Command Prompt, or PowerShell with the
-   VS environment loaded — the Ninja generator needs `cl.exe` on `PATH`.
-
-**From VS Developer PowerShell:**
-
-```powershell
-# x86 build
-Import-Module "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-Enter-VsDevShell -VsInstallPath "C:\Program Files\Microsoft Visual Studio\18\Community" -Arch x86
-cmake --preset ninja-x86-local
-cmake --build --preset ninja-x86-local-debug
-ctest --preset ninja-x86-local-debug
-
-# x64 build
-Enter-VsDevShell -VsInstallPath "C:\Program Files\Microsoft Visual Studio\18\Community" -Arch amd64
-cmake --preset ninja-x64-local
-cmake --build --preset ninja-x64-local-debug
-ctest --preset ninja-x64-local-debug
+# Run tests
+ctest --preset test-release         # or: test-debug
 ```
 
-**Presets from `CMakeUserPresets.json.example`** (each inherits the shipped
-`ninja-x86` / `ninja-x64` configure preset and its `build-ninja-x86` /
-`build-ninja-x64` binary directory):
+Every product in the SCADA tree carries this same preset set (ADR 0011), so the
+commands do not change from one to the next, and there is no longer a
+per-architecture preset or a `CMakeUserPresets.json` to copy. Set `VCPKG_ROOT`
+in the environment; everything else machine-specific — target triplet, the MSVC
+toolchain paths, compiler launchers — goes in `.scada-local.cmake` beside
+`build-support/`. Output lands in `build/ninja/bin/<config>/`.
 
-| Configure | Build | Test |
-|-----------|-------|------|
-| `ninja-x86-local` | `ninja-x86-local-debug`, `ninja-x86-local-release` | `ninja-x86-local-debug`, `ninja-x86-local-release` |
-| `ninja-x64-local` | `ninja-x64-local-debug`, `ninja-x64-local-release` | `ninja-x64-local-debug`, `ninja-x64-local-release` |
-
-The shipped `ninja-x86` / `ninja-x64` presets can also be used directly if you
-pass the local paths on the command line instead:
-
-```powershell
-cmake --preset ninja-x86 `
-  -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-  -DVCPKG_TARGET_TRIPLET=x86-windows
-```
+On Windows, run from a Visual Studio Developer Command Prompt so `cl.exe` is on
+`PATH`, or set the MSVC search paths in `.scada-local.cmake`; see
+`build-support/README.md`.
 
 ## Static Analysis (clang-tidy)
 

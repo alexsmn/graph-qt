@@ -1,3 +1,4 @@
+/build/
 /build-ninja-x64
 /build-ninja-x86
 /build-windows
@@ -5,3 +6,6 @@ CMakeUserPresets.json
 .claude/settings.local.json
 .vscode/
 nul
+# ...but build-support/ is the shared CMake kit an export of this product carries
+# at its root. It only looks like a build directory (ADR 0011).
+!/build-support/

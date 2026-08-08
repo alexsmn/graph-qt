@@ -42,28 +42,26 @@ pointer bump before anything else sees it.
 
 ## Build Commands
 
-Run these from a Visual Studio Developer Command Prompt — the Ninja generator
-needs `cl.exe` on `PATH`.
+graph_qt builds standalone. Set `VCPKG_ROOT` in the environment; anything else
+machine-specific goes in `.scada-local.cmake` beside `build-support/`
+(ADR 0011). On Windows run from a Visual Studio Developer Command Prompt so the
+Ninja generator finds `cl.exe`.
 
-```batch
-# Configure (requires CMakeUserPresets.json with local paths; copy the example)
-cmake --preset ninja-x86-local
+```bash
+# Configure
+cmake --preset ninja
 
 # Build
-cmake --build --preset ninja-x86-local-debug
+cmake --build --preset release      # or: debug, relwithdebinfo
 
 # Run unit tests
-ctest --preset ninja-x86-local-debug
+ctest --preset test-release         # or: test-debug
 
 # Run the test application
-build-ninja-x86\Debug\graph_qt_tester.exe
+build/ninja/bin/Release/graph_qt_tester
 ```
 
-`CMakePresets.json` ships only `ninja-x86` / `ninja-x64`; the `-local` variants
-above come from `CMakeUserPresets.json.example` and add the vcpkg toolchain and
-Ninja paths. Substitute `x64` for `x86` throughout for a 64-bit build.
-
-See [README.md](README.md) for prerequisites and `CMakeUserPresets.json` setup.
+See [README.md](README.md) for prerequisites.
 
 ## Architecture
 
