@@ -104,6 +104,26 @@ Uses Chromium C++ style (see `.clang-format`). Include order: local headers firs
 
 Test files must be located next to the files where the tested functionality is defined. Name test files with a `_unittest.cpp` suffix (e.g., `graph_range.h` → `graph_range_unittest.cpp`).
 
+### Golden images
+
+`graph_rendering_unittest.cpp` compares rendered output against the tracked PNGs
+in `testdata/`. Read and write them through `test/golden_image.h` — never
+`QImage::save()` onto a golden path directly.
+
+**Deleting a golden is the only way to ask for a new baseline.** A golden that
+is present but does not decode — truncated, corrupt, or a build without the PNG
+codec — fails the test and tells you to restore it from git; it is never treated
+as "no baseline yet". The two used to be one condition, and a run without the
+codec zeroed two of the sibling `view_manager_qt` goldens on 2026-08-08 and then
+rebaselined them from whatever it had just rendered. `QImageWriter` opens and
+truncates its destination before it discovers it has no encoder, which is why
+`test::SaveGoldenImage` encodes to a scratch sibling and moves it into place
+only once it is whole.
+
+The helper is duplicated in `view_manager_qt` rather than shared: the two are
+separately exportable products under ADR 0011 and neither may include from the
+other.
+
 ## CMake
 
 Do not use `file(GLOB ...)` in CMakeLists.txt. List source files explicitly to ensure proper rebuild detection when files are added or removed.
