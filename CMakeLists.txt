@@ -53,6 +53,7 @@ add_library(graph_qt STATIC
   graph_widget.h
   horizontal_scroll_bar_controller.cpp
   horizontal_scroll_bar_controller.h
+  test/golden_image.h
   test/test_data_source.h
 )
 
@@ -69,6 +70,7 @@ set_property(TARGET graph_qt PROPERTY AUTOMOC ON)
 add_executable(graph_qt_unittests
   graph_rendering_unittest.cpp
   graph_unittest.cpp
+  test/golden_image_unittest.cpp
   test/unittest_main.cpp
 )
 target_link_libraries(graph_qt_unittests PRIVATE GTest::gmock graph_qt)

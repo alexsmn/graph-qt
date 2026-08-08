@@ -5,6 +5,7 @@
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/graph_time_helper.h"
+#include "graph_qt/test/golden_image.h"
 #include "test/test_data_source.h"
 
 #include <gtest/gtest.h>
@@ -117,26 +118,47 @@ class GraphRenderingTest : public ::testing::Test {
     testdata_path_ = GetTestDataPath();
   }
 
-  // Loads a golden image from testdata.
-  // Returns null image if the file doesn't exist (expected on first run).
-  QImage LoadGoldenImage(const QString& name) {
-    QString path = testdata_path_ + "/" + name;
-    return QImage(path);
-  }
-
-  // Saves an image to testdata (for generating golden images).
-  void SaveGoldenImage(const QImage& image, const QString& name) {
-    QString path = testdata_path_ + "/" + name;
+  // Compares `actual` against the golden image `name` in testdata, creating
+  // the golden when none exists yet and skipping the test so the next run
+  // verifies against it.
+  //
+  // A golden that exists but does not decode is a failure, never a missing
+  // golden: it means the baseline is damaged, and regenerating one there would
+  // replace a reviewed image with whatever the current code renders.
+  void ExpectMatchesGolden(const QImage& actual, const QString& name) {
     QDir().mkpath(testdata_path_);
-    if (!image.save(path)) {
-      ADD_FAILURE() << "Failed to save golden image: " << path.toStdString();
-    }
-  }
+    const QString path = testdata_path_ + "/" + name;
 
-  // Saves actual output for debugging when test fails.
-  void SaveActualImage(const QImage& image, const QString& name) {
-    QString path = testdata_path_ + "/actual_" + name;
-    image.save(path);
+    QImage expected;
+    switch (test::LoadGoldenImage(path, expected)) {
+      case test::GoldenLoadResult::kLoaded:
+        break;
+      case test::GoldenLoadResult::kAbsent:
+        ASSERT_TRUE(test::SaveGoldenImage(actual, path))
+            << "Failed to save golden image: " << path.toStdString();
+        GTEST_SKIP() << "Golden image created. Re-run test to verify.";
+      case test::GoldenLoadResult::kUnreadable:
+        FAIL() << "Golden image exists but cannot be decoded: "
+               << path.toStdString()
+               << ". Restore it from git rather than regenerating it: this "
+                  "build may simply be missing the image codec.";
+    }
+
+    const int diff_pixels = CompareImages(actual, expected);
+    if (diff_pixels == 0) {
+      return;
+    }
+
+#if defined(Q_OS_MACOS)
+    GTEST_SKIP() << "Golden rendering is platform-specific on macOS.";
+#else
+    // Debug output only, and deliberately not a golden path: a failed write
+    // here costs nothing but a missing artifact.
+    const QString actual_path = testdata_path_ + "/actual_" + name;
+    actual.save(actual_path);
+    FAIL() << "Rendering differs from golden image by " << diff_pixels
+           << " pixels. Actual saved to: " << actual_path.toStdString();
+#endif
   }
 
   QString testdata_path_;
@@ -158,26 +180,7 @@ TEST_F(GraphRenderingTest, BasicGraph) {
 
   QImage actual = RenderWidget(graph);
 
-  const QString golden_name = "basic_graph.png";
-  QImage expected = LoadGoldenImage(golden_name);
-
-  if (expected.isNull()) {
-    // Golden image doesn't exist yet - save current output as golden.
-    SaveGoldenImage(actual, golden_name);
-    GTEST_SKIP() << "Golden image created. Re-run test to verify.";
-  }
-
-  int diff_pixels = CompareImages(actual, expected);
-
-  if (diff_pixels != 0) {
-#if defined(Q_OS_MACOS)
-    GTEST_SKIP() << "Golden rendering is platform-specific on macOS.";
-#else
-    SaveActualImage(actual, golden_name);
-    FAIL() << "Rendering differs from golden image by " << diff_pixels
-           << " pixels. Actual saved to: actual_" << golden_name.toStdString();
-#endif
-  }
+  ExpectMatchesGolden(actual, "basic_graph.png");
 }
 
 TEST_F(GraphRenderingTest, DarkBackgroundUsesLightGraphChrome) {
@@ -269,25 +272,7 @@ TEST_F(GraphRenderingTest, MultipleLines) {
 
   QImage actual = RenderWidget(graph);
 
-  const QString golden_name = "multiple_lines.png";
-  QImage expected = LoadGoldenImage(golden_name);
-
-  if (expected.isNull()) {
-    SaveGoldenImage(actual, golden_name);
-    GTEST_SKIP() << "Golden image created. Re-run test to verify.";
-  }
-
-  int diff_pixels = CompareImages(actual, expected);
-
-  if (diff_pixels != 0) {
-#if defined(Q_OS_MACOS)
-    GTEST_SKIP() << "Golden rendering is platform-specific on macOS.";
-#else
-    SaveActualImage(actual, golden_name);
-    FAIL() << "Rendering differs from golden image by " << diff_pixels
-           << " pixels. Actual saved to: actual_" << golden_name.toStdString();
-#endif
-  }
+  ExpectMatchesGolden(actual, "multiple_lines.png");
 
   // Clean up before data_source2 is destroyed.
   pane->plot().DeleteAllLines();
@@ -325,25 +310,7 @@ TEST_F(GraphRenderingTest, MultiplePanes) {
 
   QImage actual = RenderWidget(graph);
 
-  const QString golden_name = "multiple_panes.png";
-  QImage expected = LoadGoldenImage(golden_name);
-
-  if (expected.isNull()) {
-    SaveGoldenImage(actual, golden_name);
-    GTEST_SKIP() << "Golden image created. Re-run test to verify.";
-  }
-
-  int diff_pixels = CompareImages(actual, expected);
-
-  if (diff_pixels != 0) {
-#if defined(Q_OS_MACOS)
-    GTEST_SKIP() << "Golden rendering is platform-specific on macOS.";
-#else
-    SaveActualImage(actual, golden_name);
-    FAIL() << "Rendering differs from golden image by " << diff_pixels
-           << " pixels. Actual saved to: actual_" << golden_name.toStdString();
-#endif
-  }
+  ExpectMatchesGolden(actual, "multiple_panes.png");
 
   // Clean up before data sources are destroyed.
   graph.DeleteAllPanes();
