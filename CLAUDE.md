@@ -7,26 +7,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Do not commit changes automatically. Wait for explicit user request before
 creating commits. Build and test locally before you do.
 
-**There are two remotes.** `origin` is a local bare mirror —
-`/Users/alexsmn/tc/git/scada/graph_qt.git`, which is also the URL the
-superproject's `.gitmodules` uses. `github` is the public GitHub repository
-[alexsmn/graph-qt](https://github.com/alexsmn/graph-qt) (note the hyphen; the
-directory name uses an underscore). Anything pushed to `github` is public.
+**In the `scada` tree there is one remote, and it is the superproject's.**
+`third_party/graph_qt/` is a plain tracked directory of the one repository, not
+a clone of its own: `git remote -v` from anywhere in the tree reports the
+superproject's `origin`, and `git rev-parse --show-toplevel` returns the tree
+root. So a commit here is an ordinary commit on the superproject's branch, and
+review happens on the diff before the commit — there is no separate history to
+push and no pull-request flow to use unless the user asks for one.
 
-Earlier guidance in this file claimed there was no GitHub remote and no
-pull-request flow. That was wrong on both counts — the repo has carried pull
-requests (commit `78a01d4` is "… (#1)"). In practice review has been happening
-on the diff before the commit rather than in a PR; keep doing that unless the
-user asks for a PR.
+**Publication is by export, and graph_qt is not published.** The export manifest
+(`tools/export/products.toml`, the `graph_qt` product) sends this directory plus
+the shared `build-support/`, `ports/` and root `.clang-format` to
+`/Users/alexsmn/tc/git/scada/graph_qt.git`, and marks it `published = false`;
+`tools/export/export.py` refuses to publish an unpublished product without
+`--allow-new-publication`. The five products marked `published = true` are
+`core`, `common`, `client`, `scada-docs` and `opcuapp` — graph_qt is not among
+them.
 
-**The default branch is `main`, on both remotes.** Land changes there when the
-user asks for a commit.
-
-Until 2026-07-26 the default was `add-vcpkg-manifest` — a name left over from
-how that branch started — while `main` sat stale behind it. That branch was
-fast-forward merged into `main`, and `origin/HEAD` on the mirror was repointed,
-so the two remotes and the local clone now agree. Older guidance in this file
-said `main` was abandoned and must not be pushed to; that no longer applies.
+Earlier guidance in this file described `origin` and `github` remotes local to
+this directory, a public GitHub repository, and a default branch of its own.
+That model predates the graft into the superproject; none of those remotes
+exists in this checkout. If a GitHub repository of that name still exists it is
+outside the supported publication path, so do not push to it — ask the user.
 
 There is no CI as of 2026-07-26: `.github/workflows/ci.yml` was deleted that
 day. It did run on GitHub — 8 recorded runs, on `main` pushes and on pull
@@ -36,9 +38,15 @@ installed Qt 5.15.2 and `qtbase5-dev` long after the build moved to Qt6. Local
 commit. A replacement workflow would need a Qt6 toolchain and a build that
 finishes in reasonable time.
 
-This repository is consumed as a submodule of the `scada` superproject, so a
-change here is only half a change: the superproject needs a matching submodule
-pointer bump before anything else sees it.
+A change here needs no pointer bump and no second step: `graph_qt` is a plain
+tree in the `scada` superproject, so committing it *is* publishing it to
+everything that consumes it. `.gitmodules` declares exactly one submodule in the
+whole tree — `third_party/libiec61850` — and
+`git ls-tree -r HEAD | awk '$2=="commit"'` returns that one gitlink. Earlier
+guidance here said the superproject needed a matching submodule pointer bump;
+there is no pointer to bump, so a session that believed it went hunting for a
+`.gitmodules` entry that does not exist, or concluded a landed change had not
+propagated when it already had.
 
 ## Build Commands
 
