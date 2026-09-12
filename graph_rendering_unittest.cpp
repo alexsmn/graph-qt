@@ -13,6 +13,7 @@
 #include <QApplication>
 #include <QCoreApplication>
 #include <QDateTime>
+#include <QDeadlineTimer>
 #include <QDir>
 #include <QFileInfo>
 #include <QImage>
@@ -71,6 +72,22 @@ class PaintCounter : public QObject {
     return QObject::eventFilter(object, event);
   }
 };
+
+// Pumps the event loop until `predicate` holds, or the deadline passes.
+// Condition-driven rather than a fixed number of passes: a repaint is
+// delivered when Qt gets to it, so counting passes makes the test a
+// measurement of the machine.
+template <typename Predicate>
+bool DrainUntil(Predicate&& predicate,
+                std::chrono::milliseconds timeout = std::chrono::seconds{5}) {
+  QDeadlineTimer deadline{timeout};
+  while (!predicate()) {
+    if (deadline.hasExpired())
+      return predicate();
+    QCoreApplication::processEvents(QEventLoop::AllEvents, 10);
+  }
+  return true;
+}
 
 // Returns the path to the testdata directory.
 QString GetTestDataPath() {
@@ -239,19 +256,30 @@ TEST_F(GraphRenderingTest, PaletteChangeRepaintsChildren) {
   auto* pane = graph.AddPane();
   pane->plot().AddLine(data_source_);
 
-  graph.show();
-  QCoreApplication::processEvents();
-
   PaintCounter counter;
   pane->plot().installEventFilter(&counter);
+
+  graph.show();
+  // Wait for the FIRST paint rather than assuming show() plus one pass
+  // delivered it: Qt does not repaint a widget that is not yet exposed, so a
+  // palette change applied before that point schedules nothing and the
+  // assertion below reads a counter that was never going to move.
+  ASSERT_TRUE(DrainUntil([&] { return counter.count > 0; }))
+      << "the plot never painted after show()";
   counter.count = 0;
 
   QPalette dark_palette = graph.palette();
   dark_palette.setColor(QPalette::Base, QColor{18, 18, 18});
   graph.setPalette(dark_palette);
-  QCoreApplication::processEvents();
 
-  EXPECT_GT(counter.count, 0);
+  // A palette change schedules a deferred repaint; how many event-loop passes
+  // it takes to arrive is not something the test controls. One
+  // processEvents() call happened to be enough most of the time and not all of
+  // it -- measured at 4 failures in 10 serial runs on an idle machine, every
+  // one of them `counter.count > 0` reading 0 -- which read as -j contention
+  // and was not.
+  EXPECT_TRUE(DrainUntil([&] { return counter.count > 0; }))
+      << "the palette change did not repaint the plot";
 }
 
 TEST_F(GraphRenderingTest, MultipleLines) {
