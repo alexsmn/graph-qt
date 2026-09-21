@@ -63,7 +63,6 @@ add_library(graph_qt STATIC
   graph_widget.h
   horizontal_scroll_bar_controller.cpp
   horizontal_scroll_bar_controller.h
-  test/golden_image.h
   test/test_data_source.h
 )
 
@@ -80,8 +79,12 @@ set_property(TARGET graph_qt PROPERTY AUTOMOC ON)
 add_executable(graph_qt_unittests
   graph_rendering_unittest.cpp
   graph_unittest.cpp
-  test/golden_image_unittest.cpp
   test/unittest_main.cpp
+  # The shared golden-image helper's own test, from the build kit. One copy,
+  # compiled by every product that uses the header, so each still verifies it
+  # in its own build. Named by absolute path because the kit is at the tree
+  # root in the monorepo and at this product's root in an export.
+  "${SCADA_BUILD_SUPPORT_DIR}/scada_qt_golden_image_unittest.cpp"
 )
 target_link_libraries(graph_qt_unittests PRIVATE GTest::gmock graph_qt)
 add_test(NAME graph_qt_unittests COMMAND graph_qt_unittests

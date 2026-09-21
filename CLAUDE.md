@@ -115,7 +115,8 @@ Test files must be located next to the files where the tested functionality is d
 ### Golden images
 
 `graph_rendering_unittest.cpp` compares rendered output against the tracked PNGs
-in `testdata/`. Read and write them through `test/golden_image.h` — never
+in `testdata/`. Read and write them through
+`build-support/scada_qt_golden_image.h` (namespace `scada::qt_test`) — never
 `QImage::save()` onto a golden path directly.
 
 **Deleting a golden is the only way to ask for a new baseline.** A golden that
@@ -125,15 +126,22 @@ as "no baseline yet". The two used to be one condition, and a run without the
 codec zeroed two of the sibling `view_manager_qt` goldens on 2026-08-08 and then
 rebaselined them from whatever it had just rendered. `QImageWriter` opens and
 truncates its destination before it discovers it has no encoder, which is why
-`test::SaveGoldenImage` encodes to a scratch sibling and moves it into place
-only once it is whole.
+`scada::qt_test::SaveGoldenImage` encodes to a scratch sibling and moves it
+into place only once it is whole.
 
-The helper is duplicated in `view_manager_qt` rather than shared: the two are
-separately exportable products under ADR 0011 and neither may include from the
-other. Note that the headless-platform helper described below solved the same
-problem differently, by moving into `build-support/`, which every export
-carries; the golden-image helper could go the same way and has not, so the
-duplication here is unexamined rather than decided.
+**The helper is shared, not copied.** It lived here and in a byte-identical
+copy under `view_manager_qt` — differing only in include guard and namespace,
+and with a second copy of its 147-line test below it — until 2026-09-20, on the
+reasoning that the two are separately exportable products under ADR 0011 and
+neither may include from the other. True, and answered by a third place:
+`build-support/`, the shared kit, which every export carries at its own root.
+Reaching it costs one `include_directories("${SCADA_BUILD_SUPPORT_DIR}")` near
+the top of `CMakeLists.txt`, and the test comes along with it — this product's
+test executable names
+`${SCADA_BUILD_SUPPORT_DIR}/scada_qt_golden_image_unittest.cpp` as a source, so
+the helper is still verified in this product's own build. A safety fix kept in
+two hand-synced copies is exactly the one you do not want drifting, and this
+one exists because a drifted-from version destroyed two tracked baselines.
 
 ## CMake
 

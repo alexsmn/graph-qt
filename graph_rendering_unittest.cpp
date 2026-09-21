@@ -5,7 +5,7 @@
 #include "graph_qt/graph_pane.h"
 #include "graph_qt/graph_plot.h"
 #include "graph_qt/graph_time_helper.h"
-#include "graph_qt/test/golden_image.h"
+#include "scada_qt_golden_image.h"
 #include "test/test_data_source.h"
 
 #include <gtest/gtest.h>
@@ -147,14 +147,14 @@ class GraphRenderingTest : public ::testing::Test {
     const QString path = testdata_path_ + "/" + name;
 
     QImage expected;
-    switch (test::LoadGoldenImage(path, expected)) {
-      case test::GoldenLoadResult::kLoaded:
+    switch (scada::qt_test::LoadGoldenImage(path, expected)) {
+      case scada::qt_test::GoldenLoadResult::kLoaded:
         break;
-      case test::GoldenLoadResult::kAbsent:
-        ASSERT_TRUE(test::SaveGoldenImage(actual, path))
+      case scada::qt_test::GoldenLoadResult::kAbsent:
+        ASSERT_TRUE(scada::qt_test::SaveGoldenImage(actual, path))
             << "Failed to save golden image: " << path.toStdString();
         GTEST_SKIP() << "Golden image created. Re-run test to verify.";
-      case test::GoldenLoadResult::kUnreadable:
+      case scada::qt_test::GoldenLoadResult::kUnreadable:
         FAIL() << "Golden image exists but cannot be decoded: "
                << path.toStdString()
                << ". Restore it from git rather than regenerating it: this "
