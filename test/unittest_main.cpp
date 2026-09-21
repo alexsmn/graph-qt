@@ -1,10 +1,10 @@
-#include <gmock/gmock.h>
-
-#include <QApplication>
-
 // From build-support/, put on the include path by the product root; see the
 // header for why it lives there and not beside this file.
 #include "scada_qt_offscreen_platform.h"
+
+#include <gmock/gmock.h>
+
+#include <QApplication>
 
 int main(int argc, char** argv) {
   // Before QApplication, which reads QT_QPA_PLATFORM in its constructor.
