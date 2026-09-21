@@ -130,8 +130,38 @@ only once it is whole.
 
 The helper is duplicated in `view_manager_qt` rather than shared: the two are
 separately exportable products under ADR 0011 and neither may include from the
-other.
+other. Note that the headless-platform helper described below solved the same
+problem differently, by moving into `build-support/`, which every export
+carries; the golden-image helper could go the same way and has not, so the
+duplication here is unexamined rather than decided.
 
 ## CMake
 
 Do not use `file(GLOB ...)` in CMakeLists.txt. List source files explicitly to ensure proper rebuild detection when files are added or removed.
+
+### The tests run offscreen on macOS
+
+`test/unittest_main.cpp` calls `scada::qt_test::DefaultToOffscreenPlatform()`
+before it builds the `QApplication`, which on macOS sets `QT_QPA_PLATFORM` to
+`offscreen:configfile=<a 1920x1080 screen>` unless the caller named a
+platform. Without it, a `ctest` sweep bounced a Dock icon once per case.
+
+Two preconditions, neither of which held until 2026-09-20:
+
+- **The plugin has to be in the Qt**, which is a `vcpkg.json` question rather
+  than a code one. qtbase gates `src/plugins/platforms/offscreen` on
+  `QT_FEATURE_freetype`, so with `"default-features": false` and no
+  `freetype` it is never built. `$direct` names it, beside Linux
+  `fontconfig`, for that reason alone. Check with
+  `QT_QPA_PLATFORM=nosuchplatform` on the test binary, which prints the list —
+  it must say `cocoa, offscreen`.
+- **The plugin has to be linked in**, because the Qt here is static.
+  `scada_qt_import_offscreen_platform_into_tests()` at the end of
+  `CMakeLists.txt` does that and passes the screen description's path as the
+  `SCADA_QT_OFFSCREEN_PLATFORM_CONFIG` definition, the only thing the helper
+  keys on.
+
+The helper is `build-support/scada_qt_offscreen_platform.h` — shared rather
+than copied, since this product may include from no other one — reached
+through the `include_directories("${SCADA_BUILD_SUPPORT_DIR}")` near the top
+of `CMakeLists.txt`.
