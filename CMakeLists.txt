@@ -31,6 +31,16 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
+# The shared kit is on the include path so a test entry point can say
+# `#include "scada_qt_offscreen_platform.h"`. It resolves in both layouts --
+# SCADA_PRODUCT_SEARCH_ROOT is the tree root in the monorepo and this product
+# root in an export, and `build-support/` sits beneath it in both -- and it is
+# set here rather than by scada_qt_import_offscreen_platform_into_tests(),
+# which returns early on a Qt with no offscreen plugin. Tying the include path
+# to that guard would turn a missing plugin into a compile error in the file
+# that exists to cope with one.
+include_directories("${SCADA_BUILD_SUPPORT_DIR}")
+
 enable_testing()
 find_package(GTest REQUIRED)
 
@@ -79,3 +89,11 @@ add_test(NAME graph_qt_unittests COMMAND graph_qt_unittests
 )
 
 add_subdirectory(app)
+
+# Last, because it walks the targets that exist by now: the test executables
+# get the offscreen platform plugin linked in, so a static Qt can honour the
+# headless default `test/unittest_main.cpp` applies on macOS and so
+# `QT_QPA_PLATFORM=offscreen` works for a standalone ctest run. Neither was
+# true until 2026-09-20 -- see the same comment in view_manager_qt, and
+# backlog 808.
+scada_qt_import_offscreen_platform_into_tests()
