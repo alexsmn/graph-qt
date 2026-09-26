@@ -4,7 +4,9 @@
 #include "graph_qt/model/graph_types.h"
 
 #include <cstdlib>
+#include <optional>
 #include <span>
+#include <vector>
 
 namespace views {
 

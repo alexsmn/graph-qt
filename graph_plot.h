@@ -5,6 +5,7 @@
 
 #include <QWidget>
 #include <list>
+#include <vector>
 
 namespace views {
 

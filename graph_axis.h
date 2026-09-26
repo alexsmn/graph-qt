@@ -5,6 +5,8 @@
 
 #include <QWidget>
 
+#include <vector>
+
 namespace views {
 
 class Graph;

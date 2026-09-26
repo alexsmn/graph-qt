@@ -9,6 +9,7 @@
 #include <QMouseEvent>
 #include <QPainter>
 #include <QToolTip>
+#include <algorithm>
 #include <limits>
 
 QRect MakeRectFromPoints(const QPoint& a, const QPoint& b) {

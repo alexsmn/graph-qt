@@ -20,6 +20,7 @@
 #include <QPainter>
 #include <QStyle>
 #include <chrono>
+#include <vector>
 
 namespace views {
 namespace {
