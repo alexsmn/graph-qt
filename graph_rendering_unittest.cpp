@@ -90,10 +90,21 @@ bool DrainUntil(Predicate&& predicate,
   return true;
 }
 
-// Returns the path to the testdata directory.
+// Returns the directory holding this platform's golden images.
+//
+// Goldens are per platform because offscreen Qt draws text with the host's
+// fonts: the images at the top of testdata/ are Windows renders, and Linux
+// differs from them by ~10k pixels with nothing wrong (the client's first
+// Linux CI run, scada-client run 36306873339). Linux keeps its own set in
+// testdata/linux/, recorded on CI's ubuntu-latest runner. macOS compares
+// against the Windows set and skips a mismatch (see ExpectMatchesGolden).
 QString GetTestDataPath() {
   QDir dir{QFileInfo{QString::fromUtf8(__FILE__)}.absoluteDir()};
+#if defined(Q_OS_LINUX)
+  return dir.filePath("testdata/linux");
+#else
   return dir.filePath("testdata");
+#endif
 }
 
 // Renders a widget to a QImage.
