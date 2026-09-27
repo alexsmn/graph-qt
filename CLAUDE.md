@@ -15,28 +15,27 @@ root. So a commit here is an ordinary commit on the superproject's branch, and
 review happens on the diff before the commit — there is no separate history to
 push and no pull-request flow to use unless the user asks for one.
 
-**Publication is by export, and graph_qt is not published.** The export manifest
-(`tools/export/products.toml`, the `graph_qt` product) sends this directory plus
-the shared `build-support/`, `ports/` and root `.clang-format` to
-`/Users/alexsmn/tc/git/scada/graph_qt.git`, and marks it `published = false`;
-`tools/export/export.py` refuses to publish an unpublished product without
-`--allow-new-publication`. The five products marked `published = true` are
-`core`, `common`, `client`, `scada-docs` and `opcuapp` — graph_qt is not among
-them.
+**Publication is by export, and graph_qt is published** — as
+`github.com/alexsmn/graph-qt` (`tools/export/products.toml`, the `graph_qt`
+product, `published = true`; checked 2026-09-27). The export sends this
+directory plus the shared `build-support/`, `ports/` and root `.clang-format`.
+This paragraph said it was unpublished, with a local destination, until that
+date; the manifest had moved on without it.
 
 Earlier guidance in this file described `origin` and `github` remotes local to
 this directory, a public GitHub repository, and a default branch of its own.
 That model predates the graft into the superproject; none of those remotes
-exists in this checkout. If a GitHub repository of that name still exists it is
-outside the supported publication path, so do not push to it — ask the user.
+exists in this checkout. The GitHub repository is written only by
+`tools/export/export.py --publish`, never pushed to by hand.
 
-There is no CI as of 2026-07-26: `.github/workflows/ci.yml` was deleted that
-day. It did run on GitHub — 8 recorded runs, on `main` pushes and on pull
-requests — but **every run failed**, each after roughly 1h40m, and it still
-installed Qt 5.15.2 and `qtbase5-dev` long after the build moved to Qt6. Local
-`ctest` is the only check that actually executes; run it before asking for a
-commit. A replacement workflow would need a Qt6 toolchain and a build that
-finishes in reasonable time.
+graph_qt has no workflow of its own: `.github/workflows/ci.yml` was deleted on
+2026-07-26. Its tests do run in CI, though — the Qt client's workflow checks
+this product out as a sibling and runs its suite on Windows, Ubuntu and macOS,
+which is how its Linux golden images were recorded (see below). The deleted
+workflow ran 8 times on GitHub and **every run failed**, each after roughly
+1h40m, still installing Qt 5.15.2 long after the build moved to Qt6. Run local
+`ctest` before asking for a commit; the client's CI sees a change only after
+the next export.
 
 A change here needs no pointer bump and no second step: `graph_qt` is a plain
 tree in the `scada` superproject, so committing it *is* publishing it to
@@ -118,6 +117,16 @@ Test files must be located next to the files where the tested functionality is d
 in `testdata/`. Read and write them through
 `build-support/scada_qt_golden_image.h` (namespace `scada::qt_test`) — never
 `QImage::save()` onto a golden path directly.
+
+**The goldens are per platform**, because offscreen Qt draws text with the
+host's fonts. The PNGs at the top of `testdata/` are the Windows set;
+`testdata/linux/` is the Linux set, recorded on the Qt client's CI
+`ubuntu-latest` runner (2026-09-27) and selected by `GetTestDataPath()`; macOS
+compares against the Windows set and skips a mismatch. A Linux golden that is
+missing is written by the test, which then skips, and that CI job uploads it
+as the `linux-goldens` artifact to review and commit. The time axis is
+rendered in local time, so the date labels — and the goldens — also depend on
+the time zone the tests run in: CI runners are UTC.
 
 **Deleting a golden is the only way to ask for a new baseline.** A golden that
 is present but does not decode — truncated, corrupt, or a build without the PNG
