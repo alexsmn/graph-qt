@@ -27,6 +27,7 @@ class Graph : public QFrame {
 
   class Controller {
    public:
+    virtual ~Controller() = default;
     virtual void OnGraphModified() {}
     virtual void OnGraphSelectPane() {}
     virtual void OnGraphPannedHorizontally() {}

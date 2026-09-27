@@ -22,6 +22,7 @@ class GraphDataSource {
  public:
   class Observer {
    public:
+    virtual ~Observer() = default;
     virtual void OnDataSourceHistoryChanged() {}
     virtual void OnDataSourceCurrentValueChanged() {}
     virtual void OnDataSourceItemChanged() {}
