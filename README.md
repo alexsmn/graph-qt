@@ -10,7 +10,7 @@ Qt6-based graphing widget library for displaying time-series data with interacti
 
 ## Prerequisites
 
-- CMake 3.26+
+- CMake 3.27+
 - Visual Studio 2022 or later
 - Ninja (for Ninja presets)
 - Qt 6 with the Widgets module. `CMakeLists.txt` asks only for
