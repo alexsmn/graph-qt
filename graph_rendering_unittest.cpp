@@ -16,6 +16,7 @@
 #include <QDeadlineTimer>
 #include <QDir>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QImage>
 #include <QPainter>
 #include <QStyle>
@@ -96,12 +97,21 @@ bool DrainUntil(Predicate&& predicate,
 // fonts: the images at the top of testdata/ are Windows renders, and Linux
 // differs from them by ~10k pixels with nothing wrong (the client's first
 // Linux CI run, scada-client run 36306873339). Linux keeps its own set in
-// testdata/linux/, recorded on CI's ubuntu-latest runner. macOS compares
-// against the Windows set and skips a mismatch (see ExpectMatchesGolden).
+// testdata/linux/, recorded on CI's ubuntu-latest runner. Windows has two:
+// the top-level set is the native `windows` platform, and
+// testdata/windows-offscreen/ is the offscreen one CI's Windows leg runs on,
+// which draws text differently again (~10k pixels against the native set,
+// scada-client run 40138625293). macOS compares against the native Windows
+// set and skips a mismatch (see ExpectMatchesGolden). Called after the
+// QApplication exists, so the platform name is the one actually in use.
 QString GetTestDataPath() {
   QDir dir{QFileInfo{QString::fromUtf8(__FILE__)}.absoluteDir()};
 #if defined(Q_OS_LINUX)
   return dir.filePath("testdata/linux");
+#elif defined(Q_OS_WIN)
+  if (QGuiApplication::platformName() == QLatin1String("offscreen"))
+    return dir.filePath("testdata/windows-offscreen");
+  return dir.filePath("testdata");
 #else
   return dir.filePath("testdata");
 #endif

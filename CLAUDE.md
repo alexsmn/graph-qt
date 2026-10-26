@@ -121,8 +121,13 @@ in `testdata/`. Read and write them through
 **The goldens are per platform**, because offscreen Qt draws text with the
 host's fonts. The PNGs at the top of `testdata/` are the Windows set;
 `testdata/linux/` is the Linux set, recorded on the Qt client's CI
-`ubuntu-latest` runner (2026-09-27) and selected by `GetTestDataPath()`; macOS
-compares against the Windows set and skips a mismatch. A Linux golden that is
+`ubuntu-latest` runner (2026-09-27) and selected by `GetTestDataPath()`;
+`testdata/windows-offscreen/` is the set for Windows under the offscreen
+platform, which is how the client's Windows CI leg runs and which draws text
+differently from the native set (~10k pixels, scada-client run 40138625293).
+macOS compares against the Windows set and skips a mismatch. The Windows CI
+job uploads a missing offscreen golden as the `windows-offscreen-goldens`
+artifact. A Linux golden that is
 missing is written by the test, which then skips, and that CI job uploads it
 as the `linux-goldens` artifact to review and commit. The time axis is
 rendered in local time, so the date labels — and the goldens — also depend on
