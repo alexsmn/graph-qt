@@ -31,15 +31,29 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
-# The shared kit is on the include path so a test entry point can say
-# `#include "scada_qt_offscreen_platform.h"`. It resolves in both layouts --
+# The shared kit's headers (`scada_qt_offscreen_platform.h`,
+# `scada_qt_golden_image.h`) reach only the test executable that includes them,
+# through its own target_include_directories() below -- never the whole
+# directory, which also reached graph_qt and every consumer that splices this
+# product in (backlog 1063). The path resolves in both layouts --
 # SCADA_PRODUCT_SEARCH_ROOT is the tree root in the monorepo and this product
-# root in an export, and `build-support/` sits beneath it in both -- and it is
-# set here rather than by scada_qt_import_offscreen_platform_into_tests(),
-# which returns early on a Qt with no offscreen plugin. Tying the include path
-# to that guard would turn a missing plugin into a compile error in the file
-# that exists to cope with one.
-include_directories("${SCADA_BUILD_SUPPORT_DIR}")
+# root in an export, and `build-support/` sits beneath it in both.
+#
+# Configure fails if this product adds a directory-scoped include path again.
+# It compares against what the directory inherited, since a consumer that
+# splices graph_qt in may legitimately carry its own.
+get_directory_property(_graph_qt_inherited_include_dirs INCLUDE_DIRECTORIES)
+function(_graph_qt_forbid_directory_include_dirs)
+  get_directory_property(_dirs DIRECTORY ${graph_qt_SOURCE_DIR}
+                         INCLUDE_DIRECTORIES)
+  if(NOT "${_dirs}" STREQUAL "${_graph_qt_inherited_include_dirs}")
+    message(FATAL_ERROR
+      "graph_qt sets directory-scoped include directories (${_dirs}); "
+      "publish them from a target instead (backlog 1063).")
+  endif()
+endfunction()
+cmake_language(DEFER DIRECTORY ${graph_qt_SOURCE_DIR} CALL
+  _graph_qt_forbid_directory_include_dirs)
 
 enable_testing()
 find_package(GTest REQUIRED)
@@ -87,6 +101,7 @@ add_executable(graph_qt_unittests
   "${SCADA_BUILD_SUPPORT_DIR}/scada_qt_golden_image_unittest.cpp"
 )
 target_link_libraries(graph_qt_unittests PRIVATE GTest::gmock graph_qt)
+target_include_directories(graph_qt_unittests PRIVATE "${SCADA_BUILD_SUPPORT_DIR}")
 add_test(NAME graph_qt_unittests COMMAND graph_qt_unittests
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )

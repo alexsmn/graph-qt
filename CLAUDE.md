@@ -158,8 +158,10 @@ and with a second copy of its 147-line test below it — until 2026-09-20, on th
 reasoning that the two are separately exportable products under ADR 0011 and
 neither may include from the other. True, and answered by a third place:
 `build-support/`, the shared kit, which every export carries at its own root.
-Reaching it costs one `include_directories("${SCADA_BUILD_SUPPORT_DIR}")` near
-the top of `CMakeLists.txt`, and the test comes along with it — this product's
+Reaching it costs one `target_include_directories(graph_qt_unittests PRIVATE
+"${SCADA_BUILD_SUPPORT_DIR}")` in `CMakeLists.txt` (a directory-wide
+`include_directories()` until 2026-11-21, which configure now refuses), and the
+test comes along with it — this product's
 test executable names
 `${SCADA_BUILD_SUPPORT_DIR}/scada_qt_golden_image_unittest.cpp` as a source, so
 the helper is still verified in this product's own build. A safety fix kept in
@@ -194,5 +196,5 @@ Two preconditions, neither of which held until 2026-09-20:
 
 The helper is `build-support/scada_qt_offscreen_platform.h` — shared rather
 than copied, since this product may include from no other one — reached
-through the `include_directories("${SCADA_BUILD_SUPPORT_DIR}")` near the top
-of `CMakeLists.txt`.
+through the test executable's own `target_include_directories()` in
+`CMakeLists.txt`.
