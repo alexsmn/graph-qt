@@ -21,13 +21,7 @@ scada_product_prologue()
 
 project(graph_qt)
 
-# C++20, not the tree default of 23: passed to the base call so it holds when
-# graph_qt is spliced into a C++23 consumer too.
-scada_product_base(CXX_STANDARD 20)
-
-
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+scada_product_base()
 
 find_package(Qt6 COMPONENTS Widgets REQUIRED)
 
