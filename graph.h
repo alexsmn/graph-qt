@@ -83,6 +83,14 @@ class Graph : public QFrame {
   QColor selected_cursor_color() const;
   QColor cursor_label_text_color(const QColor& background) const;
 
+  // The fill of the badge on the vertical axis that reads out `line`'s current
+  // value. The default is the line's own colour, a solid badge per series. A
+  // host whose series colours must not compete with alarm colour returns a
+  // neutral fill instead; the axis then keeps the series' identity with a
+  // narrow strip of the line colour at the badge's leading edge, and picks the
+  // label colour for the fill.
+  virtual QColor GetCurrentValueFill(const GraphLine& line) const;
+
   static QColor ContrastTextColor(const QColor& background);
 
   // View

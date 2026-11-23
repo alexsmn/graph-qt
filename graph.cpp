@@ -328,6 +328,10 @@ QColor Graph::cursor_label_text_color(const QColor& background) const {
   return ContrastTextColor(background);
 }
 
+QColor Graph::GetCurrentValueFill(const GraphLine& line) const {
+  return line.color();
+}
+
 QColor Graph::ContrastTextColor(const QColor& background) {
   return RelativeLuminance(background) < 0.45 ? QColor{245, 245, 245}
                                               : QColor{25, 25, 25};

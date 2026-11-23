@@ -20,6 +20,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QStyle>
+#include <algorithm>
 #include <chrono>
 #include <vector>
 
@@ -248,6 +249,65 @@ TEST_F(GraphRenderingTest, LightBackgroundUsesDarkGraphChrome) {
   EXPECT_LT(graph.grid_pen().color().blue(), 240);
   EXPECT_EQ(Graph::ContrastTextColor(QColor{240, 240, 240}),
             QColor(25, 25, 25));
+}
+
+// A Graph whose current-value badge is a fixed neutral grey, as a host that
+// keeps series colours away from alarm colour draws it.
+class NeutralBadgeGraph : public Graph {
+ public:
+  static constexpr QRgb kFill = qRgb(0x60, 0x60, 0x60);
+
+  QColor GetCurrentValueFill(const GraphLine&) const override {
+    return QColor::fromRgb(kFill);
+  }
+};
+
+// Counts the pixels of `image` exactly equal to `rgb`, in columns [x0, x1).
+int CountPixels(const QImage& image, QRgb rgb, int x0, int x1) {
+  int count = 0;
+  for (int y = 0; y < image.height(); ++y) {
+    for (int x = x0; x < std::min(x1, image.width()); ++x) {
+      if ((image.pixel(x, y) & 0xFFFFFF) == (rgb & 0xFFFFFF))
+        ++count;
+    }
+  }
+  return count;
+}
+
+// Grabs `graph`'s first pane's vertical axis after laying the graph out.
+QImage GrabVerticalAxis(Graph& graph) {
+  RenderWidget(graph);
+  return graph.panes().front()->vertical_axis().grab().toImage();
+}
+
+TEST_F(GraphRenderingTest, CurrentValueBadgeDefaultsToTheLineColour) {
+  Graph graph;
+  auto* line = graph.AddPane()->plot().AddLine(data_source_);
+  line->SetColor(QColor{0, 0, 255});
+
+  const QImage axis = GrabVerticalAxis(graph);
+
+  // The badge spans the axis width (kLabelHeight = 20 rows), so a solid badge
+  // in the line colour is well over a hundred pixels of it.
+  EXPECT_GT(CountPixels(axis, qRgb(0, 0, 255), 0, axis.width()), 100);
+  graph.DeleteAllPanes();
+}
+
+TEST_F(GraphRenderingTest, NeutralCurrentValueBadgeKeepsAStripOfLineColour) {
+  NeutralBadgeGraph graph;
+  auto* line = graph.AddPane()->plot().AddLine(data_source_);
+  line->SetColor(QColor{0, 0, 255});
+
+  const QImage axis = GrabVerticalAxis(graph);
+
+  // The badge is the neutral fill...
+  EXPECT_GT(CountPixels(axis, NeutralBadgeGraph::kFill, 3, axis.width()), 100);
+  // ...and the line colour survives only as the 3 px leading strip. (Not an
+  // exact count: the last value sits at the top of the range, so the axis
+  // clips part of the badge.)
+  EXPECT_GT(CountPixels(axis, qRgb(0, 0, 255), 0, 3), 0);
+  EXPECT_EQ(CountPixels(axis, qRgb(0, 0, 255), 3, axis.width()), 0);
+  graph.DeleteAllPanes();
 }
 
 // The canvas used to be hardwired to Qt::white in the constructor, which left a

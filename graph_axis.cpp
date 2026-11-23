@@ -19,6 +19,9 @@ namespace views {
 namespace {
 
 static const int kLabelHeight = 20;
+// Width of the series-colour strip on a neutral current-value badge; the label
+// starts 5 px in, so the strip stays clear of it.
+static const int kCurrentValueStripWidth = 3;
 
 double EstimateValueTickStep(int area_sy, double delta, int min) {
   if (area_sy <= 0) {
@@ -203,12 +206,19 @@ void GraphAxis::PaintCurrentValue(QPainter& painter, const GraphLine& line) {
 
   auto rect = GetCurrentValueRect(value);
 
-  painter.fillRect(rect, line.color());
+  const QColor fill = graph_->GetCurrentValueFill(line);
+  painter.fillRect(rect, fill);
+  if (fill != line.color()) {
+    // A neutral badge still has to say whose value it is.
+    painter.fillRect(
+        QRect{rect.left(), rect.top(), kCurrentValueStripWidth, rect.height()},
+        line.color());
+  }
 
   rect.adjust(5, 0, 0, 0);
 
   auto label = line.data_source()->GetYAxisLabel(value);
-  painter.setPen(Graph::ContrastTextColor(line.color()));
+  painter.setPen(Graph::ContrastTextColor(fill));
   painter.drawText(rect, Qt::AlignLeft | Qt::AlignVCenter, label);
 }
 
