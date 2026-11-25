@@ -127,7 +127,8 @@ void GraphLine::Draw(QPainter& painter, const QRect& rect) {
   auto point_enum = data_source_->EnumPoints(x1, x2, true, true);
   if (point_enum && point_enum->EnumNext(value)) {
     // select pen
-    QPen solid_pen(brush, line_weight_);
+    QPen solid_pen(brush, line_weight_,
+                   dashed() ? Qt::DashLine : Qt::SolidLine);
     QPen dash_pen(brush, 1, Qt::DotLine);
 
     // Draw points.

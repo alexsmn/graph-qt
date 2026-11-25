@@ -41,11 +41,15 @@ class GraphLine : protected GraphDataSource::Observer {
   bool auto_range() const { return (flags_ & AUTO_RANGE) != 0; }
   bool dots_shown() const { return (flags_ & SHOW_DOTS) != 0; }
   bool smooth() const { return (flags_ & SMOOTH) != 0; }
+  // Drawn dashed rather than solid — a secondary series, such as an earlier
+  // period laid over the shown one. Bad points stay dotted either way.
+  bool dashed() const { return (flags_ & DASHED) != 0; }
 
   void set_auto_range(bool auto_range) { set_flag(AUTO_RANGE, auto_range); }
   void set_dots_shown(bool shown) { set_flag(SHOW_DOTS, shown); }
   void set_stepped(bool stepped) { set_flag(STEPPED, stepped); }
   void set_smooth(bool smooth) { set_flag(SMOOTH, smooth); }
+  void set_dashed(bool dashed) { set_flag(DASHED, dashed); }
 
   const GraphRange& vertical_range() const { return vertical_range_; }
   void SetVerticalRange(const GraphRange& range);
@@ -103,6 +107,7 @@ class GraphLine : protected GraphDataSource::Observer {
     AUTO_RANGE = 0x0002,
     SHOW_DOTS = 0x0004,
     SMOOTH = 0x0008,
+    DASHED = 0x0010,
   };
 
   void UpdateHorizontalRange();
